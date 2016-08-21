@@ -1280,7 +1280,9 @@ pre-defined, so we fill in its contents:
  :     add_index :users, :email, unique: true
  :   end
  : end
-We migrate the database =$ rails db:migrate=. 
+We migrate the database =$ rails db:migrate=. (If this fails, try
+exiting any running sandbox console sessions, which can lock the
+database and prevent migrations.)
 Remark: an alternative to generating a new migration is to add these
 changes to the =users= =change= method. This requires rolling back
 then migrating up. \\
@@ -1329,3 +1331,25 @@ to the submitted email address. With the current data model, we must
 do a linear search (key being the email requested) through all the
 users of the database-- i.e a /full-table/ scan. 
 Providing an inedex on the email column fixes the problem.
+
+After migrating. The test suite is RED due to violation of the
+uniqueness constraint in the /fixtures/, which contain sample data for
+the test database. Fixture data doesn't run through validations so
+they did not fail earlier tests. They are persisted in the test
+database and bc they have the same email, all tests fail. 
+#+BEGIN_SRC ruby
+one:
+  name: MyString
+  email: MyString
+
+two:
+  name: MyString
+  email: MyString
+#+END_SRC
+Simply removing the contents of the file passes the tests. 
+
+Some databases use case-sensitive indices, but our app treats them the
+same. To avoid this incompatibility, we'll standardize on all
+lower-case addresses using a =before_save= callback in the =User= model. 
+ : before_save { self.email = email.downcase }
+At this point, the Alice scenario above will work fine. 
