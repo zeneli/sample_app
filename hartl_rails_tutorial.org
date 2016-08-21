@@ -1209,4 +1209,123 @@ address at a time in the given test string) :
 | \z                                   | match end of a string                             |
 | /                                    | end of regex                                      |
 | i                                    | case-insensitive                                  |
-Applying
+Applying the regex to the =email= format validation yields:
+: validates :email, presence: true, length: { maximum: 255 }, 
+:                   format: { with: VALID_EMAIL_REGEX }
+The regex =VALID_EMAIL_REGEX= is a /constant/, idicated in Ruby by a
+name starting with a capital letter. 
+Note: the regex above allows multiple dots like =foo@bar..com=. The
+following is a fix: =VALID_EMAIL_REGEX =
+/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i=. 
+
+Uniqueness validation. \\
+To enforce uniqueness of email addresses (so that we can use them as
+usernames), we'll be using the =:unique= option in the =validates=
+method. We start with some tests. We cannot use =User.new= as before,
+this behavior requires persisting to the database to ensure uniquess
+at the persistence level. \\
+We specify that the behavior of saving two users with the same email
+should not be valid (via the =dup= method). 
+#+BEGIN_SRC ruby
+  test "email addresses should be unique" do
+    duplicate_user = @user.dup
+    @user.save
+    assert_not duplicate_user.valid?
+  end
+#+END_SRC
+Adding =uniqueness: true= to the User email =validates= method yields
+the desired GREEN. \\
+Email addresses are typically processed as if they were
+case-insensitive--i.e,=foo@bar.com= is the same as =FOO@BAR.COM= or
+=FoO@BAr.coM=-- so our validation should incorporate this as
+well. Adding the following line to our email unique example test
+yields a failing test:
+ : duplicate_user.email = @user.email.upcase
+If this test feels a little abstract, go ahead and fire up the
+console:
+#+BEGIN_SRC ruby
+$ rails console --sandbox
+>> user = User.create(name: "Example User", email: "user@example.com")
+>> user.email.upcase
+=> "USER@EXAMPLE.COM"
+>> duplicate_user = user.dup
+>> duplicate_user.email = user.email.upcase
+>> duplicate_user.valid?
+=> true
+#+END_SRC
+Hence the test is RED. =uniqueness= accepts an option:
+=case_sensitive: false=. This yields the desired GREEN. 
+Problem: Active Record uniqueness validation does not guarantee
+uniqueness at the database level. 
+Consider the scenario:
+1) Alice uses =alice@wonderland.com=
+2) Alice clicks 'Submit' twice, sending two quick requests
+3) Requests pass validation in memory, so both are persisted:
+   1) Request 1 creates a user in memory that passes validation
+   2) Request 2 does the same and also pases validation
+   3) Request 1's user gets saved
+   4) Request 2's user gets saved
+4) Result: two user records with the same email despite the uniqueness
+   validation
+Solution: enforce uniqueness at the database level as well as the
+model level. Our method: create a database /index/ on the email column
+and require that index to be unique. \\
+Dealing with the database level requires migrations:
+ : $ rails generate migration add_index_to_users_email
+Unlike the users migration, the
+=[timestamp]_add_index_to_users_email.rb= migration is not
+pre-defined, so we fill in its contents: 
+ : class AddIndexToUsersEmail < ActiveRecord::Migration[5.0]
+ :   def change
+ :     add_index :users, :email, unique: true
+ :   end
+ : end
+We migrate the database =$ rails db:migrate=. 
+Remark: an alternative to generating a new migration is to add these
+changes to the =users= =change= method. This requires rolling back
+then migrating up. \\
+Note. The Rails Way is to use migrations every time we discover that
+our data model needs to change. \\
+#+TODO implement this scenrio when learning ruby threads
+Already attempted this using Ruby multi-assignement
+#+BEGIN_SRC ruby
+ alice = User.new(name: "Alice", email: "alice@wonderland.com")
+ => #<User id: nil, name: "Alice", email: "alice@wonderland.com", 
+    created_at: nil, updated_at: nil> 
+2.3.1 :009 > alice2 = alice.dup
+ => #<User id: nil, name: "Alice", email: "alice@wonderland.com", 
+    created_at: nil, updated_at: nil> 
+2.3.1 :010 > r1, r2 = alice.save, alice2.save
+   (0.2ms)  SAVEPOINT active_record_1
+  User Exists (0.4ms)  SELECT  1 AS one FROM "users" 
+    WHERE "users"."email" = $1 LIMIT $2  [["email", "alice@wonderland.com"],
+     ["LIMIT", 1]]
+  SQL (0.3ms)  INSERT INTO "users" ("name", "email", 
+    "created_at", "updated_at") VALUES ($1, $2, $3, $4) 
+    RETURNING "id"  [["name", "Alice"], ["email", "alice@wonderland.com"], 
+    ["created_at", 2016-08-21 21:17:13 UTC], 
+    ["updated_at", 2016-08-21 21:17:13 UTC]]
+   (0.1ms)  RELEASE SAVEPOINT active_record_1
+   (0.1ms)  SAVEPOINT active_record_1
+  User Exists (0.2ms)  SELECT  1 AS one FROM "users" WHERE "users"."email" =
+     $1 LIMIT $2  [["email", "alice@wonderland.com"], ["LIMIT", 1]]
+   (0.1ms)  ROLLBACK TO SAVEPOINT active_record_1
+ => [true, false] 
+2.3.1 :011 > r1, r2 = alice.valid?, alice2.valid?
+  User Exists (0.6ms)  SELECT  1 AS one FROM "users" WHERE "users"."email" =
+     $1 AND ("users"."id" != $2) LIMIT $3  [["email", "alice@wonderland.com"], 
+    ["id", 2], ["LIMIT", 1]]
+  User Exists (0.3ms)  SELECT  1 AS one FROM "users" WHERE "users"."email" = 
+    $1 LIMIT $2  [["email", "alice@wonderland.com"], ["LIMIT", 1]]
+ => [true, false] 
+#+END_SRC
+
+
+Database indices. \\
+When creating a column in a database, it's important to consider if we
+need to /find/ records by that column. For example, when we allow
+users to log in the sample app, we need to find the corresponding user
+to the submitted email address. With the current data model, we must
+do a linear search (key being the email requested) through all the
+users of the database-- i.e a /full-table/ scan. 
+Providing an inedex on the email column fixes the problem.
