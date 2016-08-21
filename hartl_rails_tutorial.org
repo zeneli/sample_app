@@ -930,7 +930,7 @@ Rolling our own authentication system. \\
 Virtually all web apps require a login and authentication system of
 some sort. Most web frameworks (Rails included) have a plethora of
 authentication and authorization systems (Clearance, Authlogic,
-Device, CanCan (and non-Rails-specific solutions built on OpenID or
+Device, CanCan and non-Rails-specific solutions built on OpenID or
 OAuth). Why reinvent the wheel? \\
 Authentication on most sites requires extensive
 customization. Mofifying a third-party product is often more work than
@@ -983,9 +983,9 @@ which are timestamps for the record. \\
 We run =rails db:migrate= to 'migrate up'. The first time its run, it
 creates a file =db/development.sqlite3=, which is an SQLite
 database. \\
-Under the hood, this command executes the drop_table command to remove
+Under the hood, this command executes the =drop_table= command to remove
 the users table from the database. The reason this works is that the
-change method knows that drop_table is the inverse of create_table,
+change method knows that =drop_table= is the inverse of =create_table=,
 which means that the rollback migration can be easily inferred. In the
 case of an irreversible migration, such as one to remove a database
 column, it is necessary to define separate up and down methods in
@@ -1007,7 +1007,8 @@ Creating user objects. \\
 changes. An class inheriting from Active Record also takes an
 initialization hash to set the object attributes:
  : >> user = User.new(name: "Lupo Zen", email: "lzen@example.com")
- : => #<User id: nil, name: "Lupo Zen", email: "lzen@example.com", created_at: nil, updated_at: nil>
+ : => #<User id: nil, name: "Lupo Zen", email: "lzen@example.com", 
+        created_at: nil, updated_at: nil>
  : >> user.valid?
  : true
 Our =user= object is valid, as verified by calling the =valid?=
@@ -1026,19 +1027,25 @@ need to learn how to use Active Record to find user objects.
 #+BEGIN_SRC ruby
 >> user.save
 (0.4ms)  SAVEPOINT active_record_1
-  SQL (0.8ms)  INSERT INTO "users" ("name", "email", "created_at", "updated_at") VALUES ($1, $2, $3, $4) RETURNING "id"  [["name", "Lupo Zen"], ["email", "lzen@example.com"], ["created_at", 2016-08-19 23:43:33 UTC], ["updated_at", 2016-08-19 23:43:33 UTC]]
+  SQL (0.8ms)  INSERT INTO "users" 
+  ("name", "email", "created_at", "updated_at") 
+  VALUES ($1, $2, $3, $4) RETURNING "id"  
+  [["name", "Lupo Zen"], ["email", "lzen@example.com"], 
+  ["created_at", 2016-08-19 23:43:33 UTC], 
+  ["updated_at", 2016-08-19 23:43:33 UTC]]
    (0.3ms)  RELEASE SAVEPOINT active_record_1
 => true
 >> user
-=> #<User id: 1, name: "Lupo Zen", email: "lzen@example.com", created_at: "2016-08-19 23:43:33", updated_at: "2016-08-19 23:43:33">
+=> #<User id: 1, name: "Lupo Zen", email: "lzen@example.com", 
+  created_at: "2016-08-19 23:43:33", updated_at: "2016-08-19 23:43:33">
 #+END_SRC
 
 Finding user objects. \\
-- User.find(1): matches the id field of user records. 
-- User.find_by(email: "lzen@example.com"): match specified column with
+- =User.find(1)=: matches the id field of user records. 
+- =User.find_by(email: "...")=: match specified column with
   specified paramter of a user record.
-- User.first : first user of the database.
-- User.all : returns all the users in the database as an object of
+- =User.first= : first user of the database.
+- =User.all= : returns all the users in the database as an object of
   class =ActiveRecord::Relation= (effectively an array).
 - =user.reload= : reloads that in memory =user= object from the
   database copy. We can change the in memory copy and persist with
@@ -1091,7 +1098,7 @@ end
 Validity presence. \\
 /Presence/ simply verifies that a given attribute is present. We start
 with a test for the presence of a =name= attribute:
-- set the =Auser= variable's =name= to a blank string
+- set the =@user= variable's =name= to a blank string
 - check (via =assert_not=) that the resulting User object is not
   valid.
  : test "name should be present" do

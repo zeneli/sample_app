@@ -1,0 +1,1718 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>hartl_rails_tutorial</title>
+<!-- 2016-08-21 Sun 13:09 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Amarildo Zeneli" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">hartl_rails_tutorial</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. beginning</a></li>
+<li><a href="#sec-2">2. Mostly Static Pages</a></li>
+<li><a href="#sec-3">3. Rails-flavored Ruby</a></li>
+<li><a href="#sec-4">4. Filling in the layout</a></li>
+<li><a href="#sec-5">5. Modeling users</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> beginning</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<b>Version control with Git</b>. <br  />
+Undoing things a la Git. <br  />
+</p>
+<ul class="org-ul">
+<li>git status : everything is fine
+</li>
+<li>rm -rf app/controllers
+</li>
+<li>git status : D'oh!
+</li>
+<li>git checkout -f : undo the changes of the working tree by force
+overwriting the current changes.
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Mostly Static Pages</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The application will eventually have users, microposts, and a full
+login and authentication framework. <br  />
+We begin with static pages, a highly instructive exercise, rich in
+implications. We will get a first taste of automated testing, which
+will help us be more confident that our code is correct. Moreover,
+having a good test suite will allow us to <i>refactor</i> our code with
+confidence, changing its form without changing its function. 
+</p>
+
+<p>
+<b>Sample app setup Git</b>. <br  />
+The commit and push sequence below is the kind of pattern that should
+be followed in real-life development.
+</p>
+<ol class="org-ol">
+<li>git checkout -b static-pages
+</li>
+<li>rails generate controller StaticPages home help
+</li>
+<li>git add -A
+</li>
+<li>git commit -m "Add a Static Pages controller"
+</li>
+<li>git push -u origin static-pages
+</li>
+<li>git push
+</li>
+</ol>
+
+<p>
+<b>Undoing things a la Rails</b>. <br  />
+Controllers
+</p>
+<ol class="org-ol">
+<li>rails generate controller StaticPages home help
+</li>
+<li>rails destroy controller StaticPages home help
+</li>
+</ol>
+<p>
+Models
+</p>
+<ol class="org-ol">
+<li>rails generate model User name:string email:string
+</li>
+<li>rails destroy model User
+</li>
+</ol>
+<p>
+Migrations
+</p>
+<ol class="org-ol">
+<li>rails db:migrate
+</li>
+<li>rails db:rollback    undo a single migration
+</li>
+<li>rails db:migrate VERSION=0    undo to the beginning
+</li>
+</ol>
+
+<p>
+<code>GET</code>. <br  />
+HTTP defines the basic operations <code>GET</code>, <code>POST</code>, <code>PATCH</code>, and
+<code>DELETE</code>. These refer to operations between a <i>client</i> computer and a
+<i>server</i>. An emphasis on HTTP verbs is typical of web frameworks
+influenced by the <i>REST architecture</i>.
+</p>
+<ul class="org-ul">
+<li><code>GET</code>: used for <i>reading</i> data on the web
+</li>
+<li><code>POST</code>: the request sent by your browser when you submit a form
+</li>
+<li><code>PATCH</code>: updating
+</li>
+<li><code>DELETE</code>: destroying
+</li>
+</ul>
+<p>
+The last two are less common commong then <code>GET</code> and <code>POST</code> since
+browsers are incapable of sending them natively, but web frameworks
+(including Rails ) have clever ways of making it <i>seem</i> like 
+browsers are issuing such request.
+</p>
+
+<p>
+<b>Killing Spring server</b>. <br  />
+Spring processes sometimes accumulate and slow performance of your
+tests. If tests appear sluggish, its a good idea to inspect system
+process and kill them if necessary. <br  />
+</p>
+<ul class="org-ul">
+<li><code>ps aux</code>: display all process on system
+</li>
+<li><code>ps aux | grep spring</code>: display spring processes
+</li>
+<li><code>kill -15 pid</code>: issue Unix termination signal <code>-15</code> to kill process <code>pid</code>
+</li>
+<li><code>spring stop</code>: try stopping spring through its command
+</li>
+<li><code>pkill -15 -f spring</code>: if <code>spring stop</code> fails, then kill all
+processes with name <code>spring</code>
+</li>
+</ul>
+
+<p>
+<b>Guard</b>. <br  />
+The <code>rails test</code> command requires us to switch to the command line and
+run the tests by hand. We can automate this behavior with Guard. Guard
+monitors the filesystem so that, for example, when we change the
+<code>static_pages_controller_test.rb</code> file, only those tess get run. Even
+better, we can configure Guard so that when, say, the <code>home.html.erb</code>
+file is modified, the <code>static_pages_controller_test.rb</code> automatically
+runs. <br  />
+</p>
+<ol class="org-ol">
+<li><code>bundle exec guard init</code> (one time setup step)
+</li>
+<li><code>bundle exec guard</code> automatically run tests
+<ol class="org-ol">
+<li>return to run all the tests
+</li>
+<li>Ctrl-D to exit
+</li>
+</ol>
+</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Rails-flavored Ruby</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+<b>Motivation</b>. <br  />
+Ruby is a big language, but the subset needed to be productive as a
+Rails developer is relatively small. This chapter is designed to give
+you a solid foundation in Rails-flavored Ruby. <br  />
+</p>
+
+<p>
+Built-in helpers. <br  />
+From <code>app/views/layouts/application.html.erb</code> we have a line
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&lt;%= stylesheet_link_tag 'application', media: 'all',
+				       'data-turbolinks-track': 'reload' %&gt;
+</pre>
+</div>
+<p>
+This uses the built-in Rails function <code>stylesheet_link_tag</code> to include
+<code>application.css</code> for all media types. There are four Ruby ideas:
+</p>
+<ul class="org-ul">
+<li>built-in Rails methods
+</li>
+<li>method invocation with missing parentheses
+</li>
+<li>symbols
+</li>
+<li>hashs
+</li>
+</ul>
+
+<p>
+Custom helpers. <br  />
+Rails allows the cration of built-in functions called <i>helpers</i>. Its
+good convention to have a <i>base tite</i> we use on every page, with an
+optional page title if we want to be more specific. In the static
+pages section, if we removed the <code>provide(:title, "...")</code> we would not
+yield anything to the title tag. This problem can be solved with a
+helper function <code>full_title</code>.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">module ApplicationHelper
+  # Return the full title on a per-page basis.
+  def full_title(page_title='')
+    base_title = "Ruby on Rails Tutorial Sample App"
+    if page_title.empty?
+      base_title
+    else
+      page_title + " | " + base_title
+    end
+  end
+end 
+
+&lt;title&gt;&lt;%= full_title(yield(:title)) %&gt;&lt;/title&gt;
+</pre>
+</div>
+<p>
+The helper code above is full of Ruby ideas: modules, method
+definition, optional method argument, comments, local variable
+assignment, booleans, control flow, string concatenation, and return
+values.
+</p>
+
+<p>
+<b>Strings and methods</b>. <br  />
+Our principal tool for learning Ruby will be the <i>Rails console</i>
+(built on irb). The console is a great learning tool. 
+</p>
+<ul class="org-ul">
+<li>Ctrl-C is you get stuck
+</li>
+<li>Ctrl-D to exit the console
+</li>
+</ul>
+
+<p>
+Strings are the most important data structure for web apps, since web
+pages ultimately consist of strings of characters sent from the server
+to the browser.
+</p>
+<ul class="org-ul">
+<li>string literal: "foo"
+</li>
+<li>string concat: "foo" + "bar"
+</li>
+<li>string assign: first<sub>name</sub> = "Lupo"
+</li>
+<li>string interp: "#{first<sub>name</sub>} Zeneli", but not '#{first<sub>name</sub>} Zeneli'
+</li>
+</ul>
+<p>
+To <i>print</i> a string to the screen, the most commonly used Ruby
+function is <code>puts</code>. The <code>puts</code> method operates as a <i>side-effect</i>: a
+<code>puts</code> expression prints the argument to the screen then returns
+<code>nil</code>. 
+<code>print</code> prints the raw string without a newline char like <code>puts</code>. <br  />
+</p>
+
+<p>
+Object and message passing. <br  />
+Everything in Ruby is a an object; you have to build your intuition
+for objects by seeing lots of examples. Its easier to describe what
+objects do, i.e respond to messages. Messages that get passed to
+objects are <i>methods</i>, which are functions defined on those
+objects. <br  />
+Ex: Strings respond to the <code>empty?</code> method. <br  />
+<code>!!</code> coerces an object to its boolean value.
+</p>
+
+<p>
+Note that Ruby functions have an <i>implicit return</i>, meaning they
+return the last statement evaluated. So the following two definitions
+of <code>string_message</code> are equivalent.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">def string_message(str='')
+  if str.empty?
+    "Its an empty string!"
+  else
+    "The string is nonempty."
+  end
+end
+
+def string_message(str='')
+  return "Its an empty string!" if str.empty?
+  return "The string is nonempty."
+</pre>
+</div>
+<p>
+The second return of the second <code>string_message</code> function is
+unnecessary&#x2013;being the last expression means it will be returned
+regardless of the keyword <code>return</code>. In this case, we make the return
+explicit for readability. <br  />
+</p>
+<pre class="example">
+def palindrome_tester(s)
+  if s == s.reverse
+    puts "It's a palindrome!"
+  else
+    puts "It's not a palindrome."
+  end
+end
+</pre>
+
+<p>
+Back to title helper. <br  />
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">module ApplicationHelper
+  # Returns the full title on a per-page basis.       # Documentation comment
+  def full_title(page_title = '')                     # Method def, optional arg
+    base_title = "Ruby on Rails Tutorial Sample App"  # Variable assignment
+    if page_title.empty?                              # Boolean test
+      base_title                                      # Implicit return
+    else
+      page_title + " | " + base_title                 # String concatenation
+    end
+  end
+end
+</pre>
+</div>
+<p>
+Modules provide a way to package together related methods, which can
+then be <i>mixed in</i> to Ruby classes using <code>include</code>. When writing
+ordinary Ruby, you often write modules and include them explicitly
+yourself. In the case of a helper module Rails handles the inclusion
+for us. The result is that the <code>full_title</code> method is available in all
+our views. 
+</p>
+
+<p>
+<b>Other data structures</b>. <br  />
+Web apps are ultimately about strings, but <i>making</i> those strings
+requires other data structures as well. 
+</p>
+
+<p>
+Arrays and ranges. <br  />
+Understanding arrays provides a foundation for understanding hashes
+and aspects of Rails data modeling (e.g <code>has_many</code> associations). Ruby
+arrays are zero-offset. In additon to the conventional square bracket
+syntax for accessing array elements, Ruby offers synonyms <code>first</code>,
+<code>second</code>, and <code>last</code>. 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; # split on defualt; space 
+&gt;&gt;  "foo bar     baz".split     # Split a string into a three-element array.
+=&gt; ["foo", "bar", "baz"]
+&gt;&gt; # split on 'x'
+&gt;&gt; "fooxbarxbazx".split('x')
+=&gt; ["foo", "bar", "baz"]
+
+&gt;&gt; # none of the methods change the array a
+&gt;&gt; a
+=&gt; [42, 8, 17]
+&gt;&gt; a.empty?
+=&gt; false
+&gt;&gt; a.include?(42)
+=&gt; true
+&gt;&gt; a.sort
+=&gt; [8, 17, 42]
+&gt;&gt; a.reverse
+=&gt; [17, 8, 42]
+&gt;&gt; a.shuffle
+=&gt; [17, 42, 8]
+&gt;&gt; a
+=&gt; [42, 8, 17]
+
+&gt;&gt; # mutator methods of arrays ("bang" suffix)
+&gt;&gt; a
+=&gt; [42, 8, 17]
+&gt;&gt; a.sort!
+=&gt; [8, 17, 42]
+&gt;&gt; a
+=&gt; [8, 17, 42]
+
+&gt;&gt; # push operations; arrays contain mixture of types
+&gt;&gt; a.push(6)                  # Pushing 6 onto an array
+=&gt; [42, 8, 17, 6]
+&gt;&gt; a &lt;&lt; 7                     # Pushing 7 onto an array
+=&gt; [42, 8, 17, 6, 7]
+&gt;&gt; a &lt;&lt; "foo" &lt;&lt; "bar"        # Chaining array pushes
+=&gt; [42, 8, 17, 6, 7, "foo", "bar"]
+
+&gt;&gt; # join: inverse of split
+&gt;&gt; a
+=&gt; [42, 8, 17, 6, 7, "foo", "bar"]
+&gt;&gt; a.join                       # Join on nothing.
+=&gt; "4281767foobar"
+&gt;&gt; a.join(', ')                 # Join on comma-space.
+=&gt; "42, 8, 17, 6, 7, foo, bar"
+
+&gt;&gt; # ranges to arrays via to_a
+&gt;&gt; 0..9
+=&gt; 0..9
+&gt;&gt; 0..9.to_a              # Oops, call to_a on 9.
+NoMethodError: undefined method `to_a' for 9:Fixnum
+&gt;&gt; (0..9).to_a            # Use parentheses to call to_a on the range.
+=&gt; [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+&gt;&gt; # slicing: pulling out array elements
+&gt;&gt; a = %w[foo bar baz quux]         # Use %w to make a string array.
+=&gt; ["foo", "bar", "baz", "quux"]
+&gt;&gt; a[0..2]
+=&gt; ["foo", "bar", "baz"]
+&gt;&gt; # slice to the end; -1 trick
+&gt;&gt; a = (0..9).to_a
+=&gt; [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+&gt;&gt; a[2..(a.length-1)]               # Explicitly use the array's length.
+=&gt; [2, 3, 4, 5, 6, 7, 8, 9]
+&gt;&gt; a[2..-1]                         # Use the index -1 trick.
+=&gt; [2, 3, 4, 5, 6, 7, 8, 9]
+&gt;&gt; # character ranges
+&gt;&gt; ('a'..'e').to_a
+=&gt; ["a", "b", "c", "d", "e"]
+</pre>
+</div>
+
+<p>
+Blocks. <br  />
+Arrays and ranges respond to a host of methods that accept <i>blocks</i>.
+<code>(1..5).each { |i| puts 2 * i }</code> calls the <code>each</code> method on the range
+<code>(1..5)</code> and passes the block as an argument to <code>each</code>.  <code>|i|</code> is Ruby
+syntax for a block varaible. In the Rails Tutorial we’ll follow the
+common convention of using curly braces only for short one-line blocks
+and the do..end syntax for longer one-liners and for multi-line
+blocks. <br  />
+To understand blocks, you have to see them a lot and eventually get
+used to them. Below are a few examples that use the <code>map</code> method on
+arrays and ranges. The <code>map</code> method returns the result of applying the
+given block to each element of the array or range. 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; (1..5).each do |i|
+?&gt;   puts 2 * i
+&gt;&gt; end
+246810=&gt; 1..5
+&gt;&gt; (1..5).each do |number|
+?&gt;   print 2 * number
+&gt;&gt;   print '--'
+&gt;&gt; end
+2--4--6--8--10--=&gt; 1..5
+
+&gt;&gt; 3.times { puts "Betelgeuse!" }   # 3.times takes a block with no variables.
+"Betelgeuse!"
+"Betelgeuse!"
+"Betelgeuse!"
+=&gt; 3
+&gt;&gt; (1..5).map { |i| i**2 }          # The ** notation is for 'power'.
+=&gt; [1, 4, 9, 16, 25]
+&gt;&gt; %w[a b c]                        # Recall that %w makes string arrays.
+=&gt; ["a", "b", "c"]
+&gt;&gt; %w[a b c].map { |char| char.upcase }
+=&gt; ["A", "B", "C"]
+&gt;&gt; %w[A B C].map { |char| char.downcase }
+=&gt; ["a", "b", "c"]
+
+&gt;&gt; # when calling a method of the variable use "symbol-to-proc"
+&gt;&gt; %w[A B C].map { |char| char.downcase }
+=&gt; ["a", "b", "c"]
+&gt;&gt; %w[A B C].map(&amp;:downcase)
+=&gt; ["a", "b", "c"]
+
+&gt;&gt; # generate random subdomains
+&gt;&gt; ('a'..'z').to_a                     # An alphabet array
+=&gt; ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
+"p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+&gt;&gt; ('a'..'z').to_a.shuffle             # Shuffle it.
+=&gt; ["c", "g", "l", "k", "h", "z", "s", "i", "n", "d", "y", "u", "t", "j", "q",
+"b", "r", "o", "f", "e", "w", "v", "m", "a", "x", "p"]
+&gt;&gt; ('a'..'z').to_a.shuffle[0..7]       # Pull out the first eight elements.
+=&gt; ["f", "w", "i", "a", "h", "p", "c", "x"]
+&gt;&gt; ('a'..'z').to_a.shuffle[0..7].join  # Join them together to make one string.
+=&gt; "mznpybuj"
+</pre>
+</div>
+
+<p>
+Hashes and symbols. <br  />
+Hashes are indicated with curly braces containing key-value
+pairs. Hashes doe not guarantee keeping elements in a particular
+order. If order matters, use an array. hash value for an undefined key
+is simply nil. <br  />
+Although hashes can accept any object as a key, its more common to use
+symbols. Symbols represent a single entity (rather then a set of
+characters such as strings) so they are compared easily in O(1)
+time. This makes them ideal as key representations. The
+symbol/hashrocket construction follows the hash notation of other
+languages (such as JS). <code>:name =&gt;</code> and <code>name:</code> are effectively the
+same <i>only inside literal hashes</i>. <br  />
+Hash values can be virtually anything, even other hashes (cf. code
+below). These nested hashes are heavily used by Rails. Hashes (like
+ranges and arrays) respond to the <code>each</code> method (cf. code below). <br  />
+Note. <code>inspect</code> returns a string with a literal representation of the
+object it's called on.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; user = {}                          # {} is an empty hash.
+=&gt; {}
+&gt;&gt; user["first_name"] = "Michael"     # Key "first_name", value "Michael"
+=&gt; "Michael"
+&gt;&gt; user["last_name"] = "Hartl"        # Key "last_name", value "Hartl"
+=&gt; "Hartl"
+&gt;&gt; user["first_name"]                 # Element access is like arrays.
+=&gt; "Michael"
+&gt;&gt; user                               # A literal representation of the hash
+=&gt; {"last_name"=&gt;"Hartl", "first_name"=&gt;"Michael"}
+
+&gt;&gt; # hash literal representation
+&gt;&gt; user = { "first_name" =&gt; "Michael", "last_name" =&gt; "Hartl" }
+=&gt; {"last_name"=&gt;"Hartl", "first_name"=&gt;"Michael"}
+
+&gt;&gt; # symbol examples
+&gt;&gt; "name".split('')
+=&gt; ["n", "a", "m", "e"]
+&gt;&gt; :name.split('')
+NoMethodError: undefined method `split' for :name:Symbol
+&gt;&gt; "foobar".reverse
+=&gt; "raboof"
+&gt;&gt; :foobar.reverse
+NoMethodError: undefined method `reverse' for :foobar:Symbol
+&gt;&gt; user = { :name =&gt; "Michael Hartl", :email =&gt; "michael@example.com" }
+=&gt; {:name=&gt;"Michael Hartl", :email=&gt;"michael@example.com"}
+&gt;&gt; user[:name]              # Access the value corresponding to :name.
+=&gt; "Michael Hartl"
+&gt;&gt; user[:password]          # Access the value of an undefined key.
+=&gt; nil
+
+&gt;&gt; # symbol and hashrocket combination 
+&gt;&gt; h1 = { :name =&gt; "Michael Hartl", :email =&gt; "michael@example.com" }
+=&gt; {:name=&gt;"Michael Hartl", :email=&gt;"michael@example.com"}
+&gt;&gt; h2 = { name: "Michael Hartl", email: "michael@example.com" }
+=&gt; {:name=&gt;"Michael Hartl", :email=&gt;"michael@example.com"}
+&gt;&gt; h1 == h2
+=&gt; true
+
+&gt;&gt; # nested hashes
+&gt;&gt; params = {}        # Define a hash called 'params' (short for 'parameters').
+=&gt; {}
+&gt;&gt; params[:user] = { name: "Michael Hartl", email: "mhartl@example.com" }
+=&gt; {:name=&gt;"Michael Hartl", :email=&gt;"mhartl@example.com"}
+&gt;&gt; params
+=&gt; {:user=&gt;{:name=&gt;"Michael Hartl", :email=&gt;"mhartl@example.com"}}
+&gt;&gt;  params[:user][:email]
+=&gt; "mhartl@example.com"
+
+&gt;&gt; # each on hashes with inspect method calls
+&gt;&gt; flash = { success: "It worked!", danger: "It failed." }
+=&gt; {:success=&gt;"It worked!", :danger=&gt;"It failed."}
+&gt;&gt; flash.each do |key, value|
+?&gt;   puts "Key #{key.inspect} has value #{value.inspect}"
+&gt;&gt; end
+Key :success has value "It worked!"
+Key :danger has value "It failed."
+
+&gt;&gt; # more inspect calls
+&gt;&gt; puts (1..5).to_a            # Put an array as a string.
+1
+2
+3
+4
+5
+&gt;&gt; puts (1..5).to_a.inspect    # Put a literal array.
+[1, 2, 3, 4, 5]
+&gt;&gt; puts :name, :name.inspect
+name
+:name
+&gt;&gt; puts "It worked!", "It worked!".inspect
+It worked!
+"It worked!"
+
+&gt;&gt; # inspect shortcut
+p :name             # Same output as 'puts :name.inspect'
+:name
+</pre>
+</div>
+
+<p>
+CSS revisited. <br  />
+In Ruby, parentheses are optional during function calls. When hashes
+are the <i>last</i> argument in a function call, the curly braces are
+optional. Ruby interprets it correctly because, Ruby doesn't
+distinguish between newlines and other whitespace in this
+context. Breaking the lines with whitespace helps in readability. <br  />
+The <code>stylesheet_link_tag</code> function is called with two arguments:
+</p>
+<ul class="org-ul">
+<li>a string indicating the path to the stylesheet
+</li>
+<li>a hash with two elements, indicating the media type and telling
+Rails to use the turbolinks feature
+</li>
+</ul>
+<p>
+Because of the ERb, the results are inserted into the template of the
+ERb. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-ruby"># Parentheses on function calls are optional.
+stylesheet_link_tag('application', media: 'all',
+				   'data-turbolinks-track': 'reload')
+stylesheet_link_tag 'application', media: 'all',
+				   'data-turbolinks-track': 'reload'
+# Curly braces on final hash arguments are optional.
+stylesheet_link_tag 'application', { media: 'all',
+				     'data-turbolinks-track': 'reload' }
+</pre>
+</div>
+
+<p>
+<b>Ruby classes</b>. <br  />
+Ruby uses <i>classes</i> to organize methods; these classes are than
+<i>instantiated</i> to create objects. <br  />
+Constructors. We instantiated a string using the double quote
+characters, i.e a literal constructor for strings. But we can also use
+the <code>new</code> keyword on the class name itself to instantiate an
+object. Arrays work the same way; they accept a literal array. Hashes,
+in contrast to <code>Array.new</code>, take a default value for the hash, which
+will be the value for nonexistent keys. <br  />
+When a method gets called on the class itslef (e.g <code>new</code>), then it is
+a <i>class method</i>. A method call on an instance (e.g. <code>length</code> on an
+array) is an <i>instance method</i>.  
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; s = String.new("foobar")   # A named constructor for a string
+=&gt; "foobar"
+&gt;&gt; s.class
+=&gt; String
+&gt;&gt; s == "foobar"
+=&gt; true
+&gt;&gt; a = Array.new([1, 3, 2])
+=&gt; [1, 3, 2]
+&gt;&gt; h = Hash.new
+=&gt; {}
+&gt;&gt; h[:foo]            # Try to access the value for the nonexistent key :foo.
+=&gt; nil
+&gt;&gt; h = Hash.new(0)    # Arrange for nonexistent keys to return 0 instead of nil.
+=&gt; {}
+&gt;&gt; h[:foo]
+=&gt; 0
+</pre>
+</div>
+
+<p>
+Class inheritance. <br  />
+The <code>class</code> and <code>superclass</code> methods are useful to find out the class
+hierarchy. If you trace back the class hierarchy far enough then every
+class in Ruby ultimately inherits from <code>BasicObject</code>, which has no
+superclass itself. This is the technical meaning of "everything in
+Ruby is an object". 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; s = String.new("foobar")
+=&gt; "foobar"
+&gt;&gt; s.class                        # Find the class of s.
+=&gt; String
+&gt;&gt; s.class.superclass             # Find the superclass of String.
+=&gt; Object
+&gt;&gt; s.class.superclass.superclass  # Ruby 1.9 uses a new BasicObject base class
+=&gt; BasicObject
+&gt;&gt; s.class.superclass.superclass.superclass
+=&gt; nil
+
+&gt;&gt; class Word &lt; String             # Word inherits from String.
+&gt;&gt;   # Returns true if the string is its own reverse.
+&gt;&gt;   def palindrome?
+&gt;&gt;     self == self.reverse        # self is the string itself.
+&gt;&gt;   end
+&gt;&gt; end
+=&gt; nil
+&gt;&gt; s = Word.new("level")    # Make a new Word, initialized with "level".
+=&gt; "level"
+&gt;&gt; s.palindrome?            # Words have the palindrome? method.
+=&gt; true
+&gt;&gt; s.length                 # Words also inherit all the normal string methods.
+=&gt; 5
+&gt;&gt; s.class
+=&gt; Word
+&gt;&gt; s.class.superclass
+=&gt; String
+&gt;&gt; s.class.superclass.superclass
+=&gt; Object
+</pre>
+</div>
+
+<p>
+Modify built-in classes. <br  />
+While inheritance is a powerful idea, in the case of palindrome it
+might be more natural to add the <code>palindrome?</code> method to the <code>String</code>
+class itself, so we can use it on a string literal. Modifying built-in
+classes is a powerful technique, but its considered bad form to add
+methods to built-in classes without having a <i>really good</i> reason for
+doing so. <br  />
+In Rails, web apps often want to prevent variables from being
+blank&#x2013;e.g a user's name should be something other than whitespace, so
+rails adds the <code>blank?</code> method to Ruby. <br  />
+The <code>self</code> keyword does not need to be used when dealing with
+classes. <code>self</code> may be removed and all method calls in the function
+weill be done on the instance. 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; "level".palindrome?
+NoMethodError: undefined method `palindrome?' for "level":String
+&gt;&gt; class String
+&gt;&gt;   # Returns true if the string is its own reverse.
+&gt;&gt;   def palindrome?
+&gt;&gt;     self == self.reverse
+&gt;&gt;   end
+&gt;&gt; end
+=&gt; nil
+&gt;&gt; "deified".palindrome?
+=&gt; true
+
+&gt;&gt; # Rails adds the blank? method to Ruby
+&gt;&gt; "".blank?
+=&gt; true
+&gt;&gt; "      ".empty?
+=&gt; false
+&gt;&gt; "      ".blank?
+=&gt; true
+&gt;&gt; nil.blank?
+=&gt; true
+&gt;&gt; nil.empty?
+NoMethodError: undefined method `empty?' for nil:NilClass
+
+&gt;&gt; class String
+&gt;&gt;   def shuffle
+&gt;&gt;     self.split('').d=shuffle.join
+&gt;&gt;   end
+&gt;&gt; end
+&gt;&gt; "foobar".shuffle
+=&gt; "borafo"
+
+&gt;&gt; # is the same as 
+&gt;&gt; class String
+&gt;&gt;   def shuffle
+&gt;&gt;     split('').shuffle.join
+&gt;&gt;   end
+&gt;&gt; end
+&gt;&gt; "foobar".shuffle
+=&gt; "borafo"
+</pre>
+</div>
+
+<p>
+A controller class. <br  />
+When call the <code>home</code> method on the instantiated
+<code>StaticPagesController</code> object, we get a value of nil. The point of
+the <code>home</code> action is to render a web page, not to return a
+value. Rails is written in Ruby, but Rails is not Ruby. Some Rails
+classes are used like ordinary Ruby objects. Rails is its own thing
+and should be studied seperately from Ruby.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; controller = StaticPagesController.new
+=&gt; #&lt;StaticPagesController:0x22855d0&gt;
+&gt;&gt; controller.class
+=&gt; StaticPagesController
+&gt;&gt; controller.class.superclass
+=&gt; ApplicationController
+&gt;&gt; controller.class.superclass.superclass
+=&gt; ActionController::Base
+&gt;&gt; controller.class.superclass.superclass.superclass
+=&gt; ActionController::Metal
+&gt;&gt; controller.class.superclass.superclass.superclass.superclass
+=&gt; AbstractController::Base
+&gt;&gt; controller.class.superclass.superclass.superclass.superclass.superclass
+=&gt; Object
+
+&gt;&gt; controller.home
+=&gt; nil
+</pre>
+</div>
+
+<p>
+A user class. <br  />
+In Rails, the principal importance of instance variables is that they
+are automatically available in the views. <br  />
+In general they are used for variables that need to be available
+throughout a Ruby class. <br  />
+Initializing objects using a hash argument is a technique known as
+<i>mass assignment</i> (cf ch7). 
+</p>
+<ul class="org-ul">
+<li><code>attr_accessor</code> creates <i>attribute accessors</i> corresponding to a
+user's name and email address. This creates "getter" and "setter"
+methods that allow us to retrieve (get) and assing (set) <code>@name</code> and
+<code>@email</code> instance variables.
+</li>
+<li><code>def initialize</code> is special in Ruby: it's the method called when we
+execute <code>User.new</code>.
+</li>
+<li><code>attributes = {}</code>: the attributes variable has a <i>default value</i> equal to
+the empty hash, so that we can define a user with no name or email
+address.
+<ul class="org-ul">
+<li>Recall: hashes return <code>nil</code> for nonexistent keys, so
+<code>attributes[:name]</code> will be <code>nil</code> and <code>attributes[:email]</code> will be
+<code>nil</code>.
+</li>
+</ul>
+</li>
+</ul>
+<div class="org-src-container">
+
+<pre class="src src-ruby">class User
+  attr_accessor :name, :email
+
+  def initialize(attributes = {})
+    @name  = attributes[:name]
+    @email = attributes[:email]
+  end
+
+  def formatted_email
+    "#{@name} &lt;#{@email}&gt;"
+  end
+end
+
+&gt;&gt; require './example_user'     # This is how you load the example_user code.
+=&gt; true
+&gt;&gt; example = User.new
+=&gt; #&lt;User:0x224ceec @email=nil, @name=nil&gt;
+&gt;&gt; example.name                 # nil since attributes[:name] is nil
+=&gt; nil
+&gt;&gt; example.name = "Example User"           # Assign a non-nil name
+=&gt; "Example User"
+&gt;&gt; example.email = "user@example.com"      # and a non-nil email address
+=&gt; "user@example.com"
+&gt;&gt; example.formatted_email
+=&gt; "Example User &lt;user@example.com&gt;"
+
+&gt;&gt; # we can omit the curly braces for final hash arguments
+&gt;&gt; user = User.new(name: "Michael Hartl", email: "mhartl@example.com")
+=&gt; #&lt;User:0x225167c @email="mhartl@example.com", @name="Michael Hartl"&gt;
+&gt;&gt; user.formatted_email
+=&gt; "Michael Hartl &lt;mhartl@example.com&gt;"
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Filling in the layout</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Objectives:
+</p>
+<ul class="org-ul">
+<li>fill in the custom stylesheet
+</li>
+<li>fill in layout with links to the pages (such as Home and About)
+</li>
+<li>learn about partials, Rails routes, asset pipeline, and Sass
+</li>
+<li>user sign up functionality
+</li>
+</ul>
+<p>
+Most of the changes deal with add/editing markup of the sample apps
+layout, which (based on our testing guidelines) is exactly the kind of
+work that we wouldn't ordinarily test-drive, or even test at all. Most
+of the time will be in the editor and browser. We will write our first
+<i>integration test</i> to check the links on the final layout are
+correct. 
+</p>
+
+<p>
+<b>Adding some structure</b>. <br  />
+We use CSS, Bootstrap, and partials to create a tidy layout. Its
+useful to get a high-level overview of the UI as early as possible;
+for that we use <i>mockups</i> (in context of webapps: /wireframes), which
+are rough sketches of what the eventual app will look like. <br  />
+</p>
+
+
+<p>
+<b>Sass and the asset pipeline</b>. <br  />
+The <i>asset pipeline</i> simplifies the production and management of
+static assets. 
+</p>
+
+<p>
+The asset pipeline. <br  />
+From the perspective of a typical Rails developer, there are three
+main features to understand about the asset pipeline:
+</p>
+<ul class="org-ul">
+<li>asset directories: three standard directories for static
+assets. Each of these directories has a subdirectory for each asset
+class: images, JS, CSS.
+<ul class="org-ul">
+<li><code>app/assets</code>: assets specific to the present app
+</li>
+<li><code>lib/assets</code>: assets for libraries written by our developer team
+</li>
+<li><code>vendor/assets</code>: assets from third party developers
+</li>
+</ul>
+</li>
+<li>manifest files: after placing the assets in their logical locations,
+manifest files tell Rails (via Sprockets gem) how to combine them to
+form a single file. We won't need to make any changes, but see the
+Rails Guides entry on the asset pipeline for more details. Consider
+the <code>application.css</code> as an   example. The CSS comments are used by
+Sprockets to include the proper files:
+<ul class="org-ul">
+<li>'*= require<sub>tree'</sub>: ensures that all CSS files in the
+<code>app/assets/stylesheets</code> dir (including tree subdirs) are included
+in the application CSS.
+</li>
+<li>'*= require<sub>self'</sub>: specifies where in the loading sequence the CSS
+in <code>application.css</code> itself gets included. 
+</li>
+</ul>
+</li>
+<li>preprocessor engines: after you assembled your assets, Rails
+prepares them for the site template by running them through several
+preprocessing engines and using the manifest files to combine them
+for delivery to the browser. We tell Rails which processor to use
+using the filename extensions <code>.scss</code>,  <code>.coffee</code>, or <code>.erb</code>. The
+preprocessor engines can be chained, so that <code>foobar.js.erb.coffee</code>
+get run through both CoffeeScript and ERb (code from right to left).
+</li>
+</ul>
+
+<p>
+Efficiency in production. <br  />
+The asset pipeline results in assets that are optimized to be
+efficient in a production application. Traditional methods for
+organizing CSS and JS involve splitting functionality into seperate
+files and using nice formatting (convenient for programmers,
+inefficient for production). In particular, multiple full-sized files
+can significantly slow page-load times. With the asset pipeline, we
+don't have to choose between speed and convenience: we can work with
+multiple nicely formated files in dev, and then use the asset pipeline
+to make efficient files in production. In particular the asset
+pipeline combines all the: 
+</p>
+<ul class="org-ul">
+<li>application stylesheets into one CSS file (<code>application.css</code>),
+</li>
+<li>application JS into one JS file (<code>application.js</code>),
+</li>
+</ul>
+<p>
+and then minifies them to remove the unnecessary spacing and
+indentation that bloats the file size.
+</p>
+
+<p>
+Syntactically awesome stylesheets. <br  />
+Sass is a language for writing stylesheets that improves on CSS. We
+cover two improvements:
+</p>
+<ul class="org-ul">
+<li>nesting: nested elements can inherit from enclosing parent
+element. To reference the parent element (e.g <code>#logo</code> on hover),
+we use an <code>&amp;</code> (cf. below) to get <code>&amp;:hover</code> (converted by SCSS to
+<code>#logo:hover</code>). 
+</li>
+<li>variables: eliminate duplication and write more expressive code. Its
+often useful to define variables even for values that aren't
+repeated. 
+</li>
+<li>mixins (cf. ch7)
+</li>
+</ul>
+<p>
+Sass supports a format called SCSS, which is a superset of CSS
+itself. Consequently, every CSS file is also a valid SCSS file, which
+is convenient for projects with existing style rules. Since the Rails
+asset pipeline automatically uses Sass to process files with the
+<code>.scss</code> extension, the <code>custom.scss</code> file will be run through the Sass
+preprocessor before being packaged up for delivery to the browser. 
+</p>
+
+<p>
+SCSS nesting examples.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-css">// CSS
+.center {
+  text-align: center;
+}
+.center h1 {
+  margin-bottom: 10px;
+}
+
+// CSS hover attribute
+#logo {
+  ...
+}
+#logo:hover {
+  ...
+}
+
+
+// SCSS
+.center {
+  text-align: center;
+  h1 {
+    margin-bottom: 10px;
+  }
+}
+
+// SCSS hover attribute
+#logo {
+  ...
+  &amp;:hover {
+    ...
+  }
+}
+</pre>
+</div>
+
+<p>
+SCSS variable declaration examples.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-css">// CSS: multiple declarations of the same attributes
+h2 {
+  ...
+  color: #777;
+}
+...
+footer {
+  ...
+  color: #777;
+}
+
+// SCSS: defining variables
+$light-gray: #777;
+...
+h2 {
+  ...
+  color: $light-gray;
+}
+...
+footer {
+  ...
+  color: $light-gray;
+}
+</pre>
+</div>
+
+
+<p>
+Rails routes. <br  />
+To add the named routes for the sample app's static pages, we'll edit
+the routes file, <code>config/routes.rb</code>, that Rails uses to define URL
+mappings. We'll begin by reviewing the route for the Home page, which
+is a special case, and then define a set of routes for the remaining
+static pages. Root route definition (controller#action) :
+</p>
+<pre class="example">
+root 'static_pages#home'
+</pre>
+<p>
+Defining the root route creates a named route that allows us to refer
+to routes by names other than the raw URL. 
+</p>
+<ul class="org-ul">
+<li><code>root_path</code> -&gt; '/'
+</li>
+<li><code>root_url</code>  -&gt; 'http://www.example.com'
+</li>
+</ul>
+<p>
+We use <code>_path</code> for all but redirects, in which case, we use <code>_url</code> as
+specified in the HTTP standard. We redefine the verbose
+<code>static_pages/...</code> routes to shorter ones:
+</p>
+<pre class="example">
+get 'static_pages/help'
+get '/help', to: 'static_pages#help'
+</pre>
+
+
+<p>
+Using named routes. <br  />
+</p>
+
+<p>
+Layout link tests. <br  />
+After filling several of the layout links, it's a good idea to test
+them to make sure they're working correctly. We could do this by hand
+with a browser: visit the root path then check the links by hand.
+This quickly becomes combersome. Instead, we simulate the same series
+of steps using an <i>integration test</i>.
+<code>$ rails generate integration_test site_layout</code>
+Our plan for testing the layout links involves checking the HTML
+structure of our site:
+</p>
+<ol class="org-ol">
+<li>get the root path (Home page)
+</li>
+<li>verify the right page template is rendered
+</li>
+<li>check for the correct link to the Home, Help, About, and Contact
+pages
+</li>
+</ol>
+<p>
+Below we use some of the more advanced options of the <code>assert_select</code>
+method. We use the syntax that allows us to test for the presence of a
+particular link-URL combination by specifying the tag name <code>a</code> and
+attribute <code>href</code>. Rails automatically inserts the value of (say) the
+<code>about_path</code> in place of the question (escaping special characters) to
+get the tag &lt;a href"/about"&gt;&#x2026;&lt;/a&gt;. The assertion of the root path
+verifies there are two such links (the logo and navigation menu
+element). <br  />
+Below are more uses of <code>assert_select</code>. While <code>assert_select</code> is flexible
+and powerful (having many more options than shown here), experience
+shows that it's wise to take a lightweight approach to testing only
+HTML elements (such as site layout links) that are unlikely to change
+much over time. 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">test "layout links" do
+  get root_path
+  assert_template 'static_pages/home'
+  assert_select "a[href=?]", root_path, count: 2
+  assert_select "a[href=?]", help_path
+  assert_select "a[href=?]", about_path
+  assert_select "a[href=?]", contact_path
+end
+</pre>
+</div>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Code</th>
+<th scope="col" class="left">Matching HTML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">assert<sub>select</sub> "div"</td>
+<td class="left">&lt;div&gt;foobar&lt;/div&gt;</td>
+</tr>
+
+<tr>
+<td class="left">assert<sub>select</sub> "div", "foobar"</td>
+<td class="left">&lt;div&gt;foobar&lt;/div&gt;</td>
+</tr>
+
+<tr>
+<td class="left">assert<sub>select</sub> "div.nav"</td>
+<td class="left">&lt;div class="nav"&gt;foobar&lt;/div&gt;</td>
+</tr>
+
+<tr>
+<td class="left">assert<sub>select</sub> "div#profile"</td>
+<td class="left">&lt;div id="profile"&gt;foobar&lt;/div&gt;</td>
+</tr>
+
+<tr>
+<td class="left">assert<sub>select</sub> "div[name=yo]"</td>
+<td class="left">&lt;div name="yo"&gt;hey&lt;/div&gt;</td>
+</tr>
+
+<tr>
+<td class="left">assert<sub>select</sub> "a[href=?]", '/', count: 1</td>
+<td class="left">&lt;a href="/"&gt;foo&lt;/a&gt;</td>
+</tr>
+
+<tr>
+<td class="left">assert<sub>select</sub> "a[href=?]", '/', text: "foo"</td>
+<td class="left">&lt;a href="/"&gt;foo&lt;/a&gt;</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+<b>User signup: a first step</b>. <br  />
+We will make a route for the singup page and create a second
+controller. There are three steps for representing users on the sample
+app site:
+</p>
+<ol class="org-ol">
+<li>layout and routing of the signup page (here)
+</li>
+<li>modeling users (ch6)
+</li>
+<li>user registration and account activation (ch7)
+</li>
+</ol>
+
+<p>
+User controller. <br  />
+</p>
+<pre class="example">
+$ rails generate controller Users new
+</pre>
+<p>
+We <code>generate</code> the simplest controller that meets our needs, viz one
+with a stub signup page for new users. Following REST, we'll call the
+action for new users <code>new</code>. <br  />
+The result creates a Users controller with a <code>new</code> action, a stub for
+a user view, a minimal test for the new user page, and the routing. 
+</p>
+
+<p>
+On multiple assertions in single test. <br  />
+Some developers insist that a single test shouldn’t contain multiple
+assertions. I find this practice to be unnecessarily complicated,
+while also incurring an extra overhead if there are common setup tasks
+needed before each test. In addition, a well-written test tells a
+coherent story, and breaking it up into individual pieces disrupts the
+narrative. I thus have a strong preference for including multiple
+assertions in a test, relying on Ruby (via minitest) to tell me the
+exact lines of any failed assertions. 
+</p>
+
+<p>
+What we learned in this chapter
+</p>
+<ul class="org-ul">
+<li>Using HTML5, we can define a site layout with logo, header, footer, and main body content.
+</li>
+<li>Rails partials are used to place markup in a separate file for convenience.
+</li>
+<li>CSS allows us to style the site layout based on CSS classes and ids.
+</li>
+<li>The Bootstrap framework makes it easy to make a nicely designed site quickly.
+</li>
+<li>Sass and the asset pipeline allow us to eliminate duplication in our CSS while packaging up the results efficiently for production.
+</li>
+<li>Rails allows us to define custom routing rules, thereby providing named routes.
+</li>
+<li>Integration tests effectively simulate a browser clicking from page to page. 
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Modeling users</h2>
+<div class="outline-text-2" id="text-5">
+<ul class="org-ul">
+<li>we create a <i>data model</i> for users of our site, together with a way
+to store that data
+</li>
+<li>ch7- give users the ability to sign up for our site and create a
+user and profile page
+</li>
+<li>ch8 and ch9- let them log in and log out as well
+</li>
+<li>ch10- protect pages from improper access
+</li>
+<li>ch11 and ch12- add account activations (thereby confirming valid
+email) and password resets
+</li>
+</ul>
+
+<p>
+Rolling our own authentication system. <br  />
+Virtually all web apps require a login and authentication system of
+some sort. Most web frameworks (Rails included) have a plethora of
+authentication and authorization systems (Clearance, Authlogic,
+Device, CanCan and non-Rails-specific solutions built on OpenID or
+OAuth). Why reinvent the wheel? <br  />
+Authentication on most sites requires extensive
+customization. Mofifying a third-party product is often more work than
+writing the system from scratch. Also, off-the-shelf systems can be
+"black boxes". Writing our own helps us understand (and provides the
+ability to modify) the internals of others.
+</p>
+
+<p>
+<b>User model</b>. <br  />
+Although ultimate goal is to create a signup page for our site. Before
+we accept information from users, we must create data structures to
+capture and store it. <br  />
+We are dealing with the M in MVC. The default Rails solution the
+problem of persistence is to use a <i>database</i> for long-term data
+storage. The default library for interacting with the database is
+<i>Active Record</i>. Active Record comes with a host of methods for
+creating, saving, and finding data objects, all without having to use
+the structured query language SQL. <br  />
+Moreover, Rails has a feature called <i>migrations</i> to allow data
+definitions to be written in pure Ruby, without having to learn an SQL
+DDL. In effect, Rails insulates you almost entirely from the details
+of the database.
+</p>
+
+<p>
+Database migrations. <br  />
+Recall: we created a custom-built <code>User</code> class and created user
+objects through the Rails console. That class served as a useful
+example, but lacked the critical property of <i>persistence</i>: when we
+created a User object it disappeared as soon as we exited the Rails
+console. Our goal is to create a model to persist users data. <br  />
+When using Rails to model users we don't need to identify the
+attributes explicitly (Rails uses a RDB by default). 
+</p>
+<pre class="example">
+We generated a Users controller with:
+$ rails generate controller Users new
+To generate a model, we use the analogous command
+$ rails generate model User name:string email:string
+</pre>
+<p>
+Note. In contrast to the plural convention for controller names,
+models names are singular: a Users controller, but a User model. <br  />
+The result of the model generator is a migration file. Migrations
+provide a means to alter the structure of the RDB incrementally. <br  />
+The migration consists of a <code>change</code> method that determines the change
+to be made to the database. The <code>create_table</code> method accepts a block
+with one block variable, in this case called <code>t</code> for table. Inside the
+block, the <code>create_table</code> method uses the <code>t</code> object to create <code>name</code>
+and <code>email</code> columns in the database, both of type string. Here the
+table name is plural, <code>users</code>, even though the model name is singular
+<code>User</code>, reflecting the linguistic convention followed by Rails: 
+</p>
+<ul class="org-ul">
+<li>a model represents a single user
+</li>
+<li>a database table consists of many users.
+</li>
+</ul>
+<p>
+<code>t.timestamps</code> creates two colums, <code>created_at</code> and <code>updated_at</code>,
+which are timestamps for the record. <br  />
+We run <code>rails db:migrate</code> to 'migrate up'. The first time its run, it
+creates a file <code>db/development.sqlite3</code>, which is an SQLite
+database. <br  />
+Under the hood, this command executes the <code>drop_table</code> command to remove
+the users table from the database. The reason this works is that the
+change method knows that <code>drop_table</code> is the inverse of <code>create_table</code>,
+which means that the rollback migration can be easily inferred. In the
+case of an irreversible migration, such as one to remove a database
+column, it is necessary to define separate up and down methods in
+place of the single change method. Read about migrations in the Rails
+Guides for more information.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">def change
+    create_table :users do |t|
+      t.string :name
+      t.string :email
+
+      t.timestamps
+    end
+</pre>
+</div>
+
+
+<p>
+Creating user objects. <br  />
+<code>rails console --sandbox</code> for when we don't want to make any
+changes. An class inheriting from Active Record also takes an
+initialization hash to set the object attributes:
+</p>
+<pre class="example">
+&gt;&gt; user = User.new(name: "Lupo Zen", email: "lzen@example.com")
+=&gt; #&lt;User id: nil, name: "Lupo Zen", email: "lzen@example.com", 
+</pre>
+<p>
+created<sub>at</sub>: nil, updated<sub>at</sub>: nil&gt;
+</p>
+<pre class="example">
+&gt;&gt; user.valid?
+true
+</pre>
+<p>
+Our <code>user</code> object is valid, as verified by calling the <code>valid?</code>
+method (cf. below). So far we've only created the object in memory
+(note the <code>id</code> column). We can use the <code>save</code> method to persist
+objects from memory to the database. You can learn a lot by reading
+by reading the SQL corresponding to Active Record commands. <br  />
+The <code>create</code> method combins the <code>new</code> and <code>save</code> method to directly
+persist. While <code>save</code> returns a boolean to determine if the user was
+saved, <code>create</code> simply returns the user object back. The inverse is
+the <code>destroy</code> method which also returns the object in question. The
+destroyed object still exists in memory. <br  />
+So how do we know if we really destroyed an object? And for saved and
+non-destroyed objects, how can we retrieve users from the database? We
+need to learn how to use Active Record to find user objects. 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">&gt;&gt; user.save
+(0.4ms)  SAVEPOINT active_record_1
+  SQL (0.8ms)  INSERT INTO "users" 
+  ("name", "email", "created_at", "updated_at") 
+  VALUES ($1, $2, $3, $4) RETURNING "id"  
+  [["name", "Lupo Zen"], ["email", "lzen@example.com"], 
+  ["created_at", 2016-08-19 23:43:33 UTC], 
+  ["updated_at", 2016-08-19 23:43:33 UTC]]
+   (0.3ms)  RELEASE SAVEPOINT active_record_1
+=&gt; true
+&gt;&gt; user
+=&gt; #&lt;User id: 1, name: "Lupo Zen", email: "lzen@example.com", 
+  created_at: "2016-08-19 23:43:33", updated_at: "2016-08-19 23:43:33"&gt;
+</pre>
+</div>
+
+<p>
+Finding user objects. <br  />
+</p>
+<ul class="org-ul">
+<li><code>User.find(1)</code>: matches the id field of user records. 
+</li>
+<li><code>User.find_by(email: "...")</code>: match specified column with
+specified paramter of a user record.
+</li>
+<li><code>User.first</code> : first user of the database.
+</li>
+<li><code>User.all</code> : returns all the users in the database as an object of
+class <code>ActiveRecord::Relation</code> (effectively an array).
+</li>
+<li><code>user.reload</code> : reloads that in memory <code>user</code> object from the
+database copy. We can change the in memory copy and persist with
+<code>save</code>. In effect, reassigning is a way to update multiple attributes.
+</li>
+<li><code>user.update_attributes(name: "...")</code> a second way to update
+multiple attributes. Returns boolean as sentinel value.
+</li>
+</ul>
+
+<p>
+<b>User validations</b>. <br  />
+The User model now has working <code>name</code> and <code>email</code> attributes, but they
+are completely generic; any string will do. We will add validations
+for <code>name</code> not to be blank, <code>email</code> should match the specific format
+characteristic of email addresses. Moreover, since we'll be using
+email addresses as unique usernames when users log in, we shouldn't
+allow email duplicates in the database. <br  />
+Active Record allows us to impose contraints on fields values using
+<i>validations</i>. We cover the most common cases, validating <i>presence</i>,
+<i>length</i>, <i>format</i> and <i>uniqueness</i>. Later we cover <i>confirmation</i>. In
+ch7 we'll see how validations give us convenient error messages when
+users make submissions that violate them. 
+</p>
+
+<p>
+A validity test. <br  />
+Model validation is a perfect fit for TDD. It's difficult to be
+confident that a given validation is doing exactly what we expec it to
+without writing a failing test and then getting it to pass. <br  />
+Our method:
+</p>
+<ul class="org-ul">
+<li>start with a <i>valid</i> model object,
+</li>
+<li>set one of its attributes to something we want to be invalid,
+</li>
+<li>and test that it in fact is invalid.
+</li>
+</ul>
+<p>
+As a safety net, we'll first write a test to make sure the initial
+model object is valid. This way, when the validation tests fail we'll
+know it's for the right reason (and not bc the initial object was
+invalid in the first place). <br  />
+To write a test for a valid object, we'll create an initially valid
+User model object <code>@user</code> using the special <code>setup</code> method which
+automatically gets run before each test. Bc <code>@user</code> is an instance
+variable, it's automatically available in all the tests, and we can
+test its validity using the <code>valid?</code> method. The <code>assert</code> method
+succeeds if <code>@user.valid?</code> returns <code>true</code> and fails on <code>false</code>. <br  />
+Since the <code>User</code> class has no <code>validates</code> methods, the model is
+valid. 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">def setup
+  @user = User.new(...)
+end
+test "should be valid" do
+  assert @user.valid?
+end
+</pre>
+</div>
+
+<p>
+Validity presence. <br  />
+<i>Presence</i> simply verifies that a given attribute is present. We start
+with a test for the presence of a <code>name</code> attribute:
+</p>
+<ul class="org-ul">
+<li>set the <code>Auser</code> variable's <code>name</code> to a blank string
+</li>
+<li>check (via <code>assert_not</code>) that the resulting User object is not
+valid.
+<pre class="example">
+test "name should be present" do
+  @user.name = "     "
+  assert_not @user.valid?
+end
+</pre>
+</li>
+</ul>
+<p>
+Running <code>$ rails test:models</code> yields RED (failing). This is the
+behavior we expect our model to follow, given a blank name, the
+statement "assert that the model is not valid" should be true. We
+augment the model object to make the statement true:
+</p>
+<pre class="example">
+class User &lt; ApplicationRecord
+  validates :name, presence: true
+end
+</pre>
+<p>
+Not only do the tests yield GREEN (pass), but we can also see this in
+action using <code>$ rails console --sandbox</code>. Trying to save a model with
+a blank no longer shows the SQL query, rather it displays a red
+<code>ROLLBACK TO SAVEPOINT</code>. <br  />
+<code>errors</code> displays the address of any associated errors with the
+model. <code>errors.full_messages</code> displays the errors array with the
+values of the errors. 
+</p>
+
+<p>
+Same process should be followed for validating the presence of the
+email attribute of the User model:
+</p>
+<ul class="org-ul">
+<li>write test statement for expected behavior (via <code>assert_not</code>) in the
+<code>UserTest</code>
+<pre class="example">
+test "email should be present" do
+  @user.email = "     "
+  assert_not @user.valid?
+end
+</pre>
+</li>
+<li>run the test, see it fail (RED): <code>$ rails test:models</code>
+</li>
+<li>augment the model with intentions of providing expected behavior:
+<code>validates :email, presence: true</code>
+</li>
+<li>run the test, see it pass (GREEN): <code>$ rails test:models</code>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Amarildo Zeneli</p>
+<p class="date">Created: 2016-08-21 Sun 13:09</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
