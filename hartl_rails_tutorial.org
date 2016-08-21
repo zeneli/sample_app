@@ -7,6 +7,7 @@ Undoing things a la Git. \\
 - git status : D'oh!
 - git checkout -f : undo the changes of the working tree by force
   overwriting the current changes.
+
 * Mostly Static Pages
 The application will eventually have users, microposts, and a full
 login and authentication framework. \\
@@ -1133,3 +1134,79 @@ email attribute of the User model:
   =validates :email, presence: true=
 - run the test, see it pass (GREEN): =$ rails test:models=
 
+Length validation. \\
+The user’s names will be displayed on the sample site, so we should
+enforce some limit on their length.
+ : test "name should not be long" do
+ :   @user.name = "a" * 51  # over 50 is considered long
+ :   assert_not @user.valid?
+ : end
+This test fails since the user has no length validation. We add length
+validation to the user model:
+ : validates :name, presence: true, length: { maximum: 50 }
+=$ rails test:models= yields GREEN. 
+
+Format validation. \\
+The =email= attribute must satisfy more stringent requirements of
+being a valid email address. So far, we've only reject blank email
+addresses. Here, we require the email to conform to the familiar
+pattern =user@example.com=. \\
+Neither the test nor the validation will be exhaustive, just good
+enough to accept most email addresses and reject most invaild
+ones. Recall: the tests specify the behavior we expect. So the test
+with the valid addresses are examples of what we expect to be valid
+emails. The tests with invalid email address are examples of what we
+expect to be invalid. We augment the model with the email validation
+code that makes both these examples pass. In a way, we are defining
+the boundary conditions of the correct and incorrect behavior of the
+model, then implementing the least amount of functionality to make
+these assertions examples pass.  \\
+Bc email format validation is tricky and error-prone, we'll start with
+passing tests for /valid/ email addresses to catch any errors in the
+validation. \\
+Remark: we can create an array of strings using the =%w[...]=
+construct.Below we use =assert= with the second, optional, parameter as our
+custom message. Recall: the interpolated =inspect= method returns the
+value of the objects =to_s= method.
+#+BEGIN_SRC ruby
+test "email validation should accept valid addresses" do
+  valid_addresses = %w[user@example.com USER@foo.COM A_US-ER@foo.bar.org
+                       first.last@foo.jp alice+bob@baz.cn]
+  valid_addresses.each do |valid_address|
+    @user.email = valid_address
+    assert @user.valid?, "#{valid_address.inspect} should be valid"
+  end
+end
+test "email validation should not accept invalid addresses" do
+  invalid_addresses = %w[user@example,com user_at_foo.org 
+              user.name@example. foo@bar_baz.com foo@bar+baz.com ]
+  invalid_addresses.each do |invalid_address|
+    @user.email = invalid_address
+    assert_not @user.valid? , "#{invalid_address.inspect} should be invalid"
+  end
+end
+#+END_SRC
+The application code for the email format validation uses the =format=
+validation, which works like this: =validates :email, format: { with:
+/<regexp>/ }=. Regular expressions are uses for matching patterns in
+strings. Here, we use it to match valid email addresses while not
+matching invalid ones. There exists a [[http://emailregex.com][full regex]] for matching email
+addresses according to the [[http://www.ietf.org/rfc/rfc5322.txt][official email standard]], but it's enormous,
+obscure, and possibly counter-productive. We'll adopt a pragmatic
+regex that has proven to be robust in practice (see [[http://www.rubular.com/r/aE4zppL0TA][rublar]] leave off
+the \A and \z characters so that you can match more than one email
+address at a time in the given test string) : 
+ : VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
+| Expression                           | Meaning                                           |
+| /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i | full regex                                        |
+| /                                    | start of regex                                    |
+| \A                                   | match start of a string                           |
+| [\w+\-.]+                            | at least one word character, plus, hyphen, or dot |
+| @                                    | literal “at sign”                                 |
+| [a-z\d\-.]+                          | at least one letter, digit, hyphen, or dot        |
+| \.                                   | literal dot                                       |
+| [a-z]+                               | at least one letter                               |
+| \z                                   | match end of a string                             |
+| /                                    | end of regex                                      |
+| i                                    | case-insensitive                                  |
+Applying
