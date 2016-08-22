@@ -1353,3 +1353,34 @@ same. To avoid this incompatibility, we'll standardize on all
 lower-case addresses using a =before_save= callback in the =User= model. 
  : before_save { self.email = email.downcase }
 At this point, the Alice scenario above will work fine. 
+
+*Adding a secure password*. \\
+Method: require each user to have a password (w/ password
+confirmation), then store a /hashed/ version in the database. We add a
+way to /authenticate/ a user based on a given password (cf. ch8) to
+allow users to log in to the site.  Here a /hash/ refers to the result
+of applying an irreversible hash function to input data. \\
+Authenticating users :
+1) take a submitted password
+2) hash it
+3) compare the result to the hashed value stored in the database
+4) if the two math, then submitted password is correct (user authenticated)
+By comparing hashed values instead of raw passwords, we will be able to
+authenticate users without storing the raw passwords themeselves. Even
+if our database is compromised, our users' passwords will still be
+secure.
+
+A hashed password. \\
+Most of the secure password machinery will be implemented using a
+single Rails method =has_secure_password=. When included, it adds:
+- ability to save securely hashed =password_digest= attribute to db
+- pair of virtual attributes (=password= & =password_confirmation=)
+- =authenticate= method that returns the user when password is correct
+The model must have a =password_digest= attribute (synonymous with
+hashed password). \\
+To add the =password_digest= attribute to the =User= model we must
+create a migration: =$ rails g migration add_password_digest_to_users
+password_digest:string=. Then migrate up. \\
+To make the password digest, =has_secure_password= uses a bcrypt (via
+the bcrypt gem).
+

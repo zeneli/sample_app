@@ -7,6 +7,8 @@ gem 'rails', '~> 5.0.0'
 gem 'pg'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
+# Use bcrypt for password hashing
+gem 'bcrypt'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use bootstrap for responsive styling 
