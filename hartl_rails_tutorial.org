@@ -1364,7 +1364,7 @@ Authenticating users :
 1) take a submitted password
 2) hash it
 3) compare the result to the hashed value stored in the database
-4) if the two math, then submitted password is correct (user authenticated)
+4) if the two match, then submitted password is correct (user authenticated)
 By comparing hashed values instead of raw passwords, we will be able to
 authenticate users without storing the raw passwords themeselves. Even
 if our database is compromised, our users' passwords will still be
@@ -1384,3 +1384,16 @@ password_digest:string=. Then migrate up. \\
 To make the password digest, =has_secure_password= uses a bcrypt (via
 the bcrypt gem).
 
+User has secure password. \\
+After adding the [[http://api.rubyonrails.org/classes/ActiveModel/SecurePassword/ClassMethods.html#method-i-has_secure_password][has_secure_password]] to the User model and running the
+tests, we see RED on the tests that assert validity of the =@user=
+from setup. All other tests using =assert_not= remain passing since
+the model remains invalid but now for the wrong reasons (like test
+"name should be present"). =has_secure_password= enforces validation
+on the virtual =password= and =password_confirmation= attributes, but
+the tests create a =@user= variable w/out these attributes. \\
+Resulting =test/models/user_test.rb= is:
+:  def setup   # create a valid user
+:    @user = User.new(name: "Example User", email: "user@example.com",
+:                     password: "foobar", password_confirmation: "foobar")
+:  end

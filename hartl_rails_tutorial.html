@@ -4,10 +4,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>hartl_rails_tutorial</title>
-<!-- 2016-08-21 Sun 13:09 -->
+<!-- 2016-08-23 Tue 13:27 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
-<meta  name="author" content="Amarildo Zeneli" />
+<meta  name="author" content="az" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center; }
@@ -134,6 +134,48 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
 </head>
 <body>
 <div id="content">
@@ -170,6 +212,7 @@ overwriting the current changes.
 </ul>
 </div>
 </div>
+
 <div id="outline-container-sec-2" class="outline-2">
 <h2 id="sec-2"><span class="section-number-2">2</span> Mostly Static Pages</h2>
 <div class="outline-text-2" id="text-2">
@@ -1650,7 +1693,7 @@ Validity presence. <br  />
 with a test for the presence of a <code>name</code> attribute:
 </p>
 <ul class="org-ul">
-<li>set the <code>Auser</code> variable's <code>name</code> to a blank string
+<li>set the <code>@user</code> variable's <code>name</code> to a blank string
 </li>
 <li>check (via <code>assert_not</code>) that the resulting User object is not
 valid.
@@ -1705,12 +1748,405 @@ end
 <li>run the test, see it pass (GREEN): <code>$ rails test:models</code>
 </li>
 </ul>
+
+<p>
+Length validation. <br  />
+The user’s names will be displayed on the sample site, so we should
+enforce some limit on their length.
+</p>
+<pre class="example">
+test "name should not be long" do
+  @user.name = "a" * 51  # over 50 is considered long
+  assert_not @user.valid?
+end
+</pre>
+<p>
+This test fails since the user has no length validation. We add length
+validation to the user model:
+</p>
+<pre class="example">
+validates :name, presence: true, length: { maximum: 50 }
+</pre>
+<p>
+<code>$ rails test:models</code> yields GREEN. 
+</p>
+
+<p>
+Format validation. <br  />
+The <code>email</code> attribute must satisfy more stringent requirements of
+being a valid email address. So far, we've only reject blank email
+addresses. Here, we require the email to conform to the familiar
+pattern <code>user@example.com</code>. <br  />
+Neither the test nor the validation will be exhaustive, just good
+enough to accept most email addresses and reject most invaild
+ones. Recall: the tests specify the behavior we expect. So the test
+with the valid addresses are examples of what we expect to be valid
+emails. The tests with invalid email address are examples of what we
+expect to be invalid. We augment the model with the email validation
+code that makes both these examples pass. In a way, we are defining
+the boundary conditions of the correct and incorrect behavior of the
+model, then implementing the least amount of functionality to make
+these assertions examples pass.  <br  />
+Bc email format validation is tricky and error-prone, we'll start with
+passing tests for <i>valid</i> email addresses to catch any errors in the
+validation. <br  />
+Remark: we can create an array of strings using the <code>%w[...]</code>
+construct.Below we use <code>assert</code> with the second, optional, parameter as our
+custom message. Recall: the interpolated <code>inspect</code> method returns the
+value of the objects <code>to_s</code> method.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">test "email validation should accept valid addresses" do
+  valid_addresses = %w[user@example.com USER@foo.COM A_US-ER@foo.bar.org
+		       first.last@foo.jp alice+bob@baz.cn]
+  valid_addresses.each do |valid_address|
+    @user.email = valid_address
+    assert @user.valid?, "#{valid_address.inspect} should be valid"
+  end
+end
+test "email validation should not accept invalid addresses" do
+  invalid_addresses = %w[user@example,com user_at_foo.org 
+	      user.name@example. foo@bar_baz.com foo@bar+baz.com ]
+  invalid_addresses.each do |invalid_address|
+    @user.email = invalid_address
+    assert_not @user.valid? , "#{invalid_address.inspect} should be invalid"
+  end
+end
+</pre>
+</div>
+<p>
+The application code for the email format validation uses the <code>format</code>
+validation, which works like this: <code>validates :email, format: { with:
+/&lt;regexp&gt;/ }</code>. Regular expressions are uses for matching patterns in
+strings. Here, we use it to match valid email addresses while not
+matching invalid ones. There exists a <a href="http://emailregex.com">full regex</a> for matching email
+addresses according to the <a href="http://www.ietf.org/rfc/rfc5322.txt">official email standard</a>, but it's enormous,
+obscure, and possibly counter-productive. We'll adopt a pragmatic
+regex that has proven to be robust in practice (see <a href="http://www.rubular.com/r/aE4zppL0TA">rublar</a> leave off
+the \A and \z characters so that you can match more than one email
+address at a time in the given test string) : 
+</p>
+<pre class="example">
+VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i
+</pre>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="left">Expression</td>
+<td class="left">Meaning</td>
+</tr>
+
+<tr>
+<td class="left">/\A[\w+\-.]+@[a-z\d&#x00ad;.]+\.[a-z]+\z/i</td>
+<td class="left">full regex</td>
+</tr>
+
+<tr>
+<td class="left">\A</td>
+<td class="left">match start of a string</td>
+</tr>
+
+<tr>
+<td class="left">[\w+&#x00ad;.]+</td>
+<td class="left">at least one word character, plus, hyphen, or dot</td>
+</tr>
+
+<tr>
+<td class="left">@</td>
+<td class="left">literal “at sign”</td>
+</tr>
+
+<tr>
+<td class="left">[a-z\d&#x00ad;.]+</td>
+<td class="left">at least one letter, digit, hyphen, or dot</td>
+</tr>
+
+<tr>
+<td class="left">\.</td>
+<td class="left">literal dot</td>
+</tr>
+
+<tr>
+<td class="left">[a-z]+</td>
+<td class="left">at least one letter</td>
+</tr>
+
+<tr>
+<td class="left">\z</td>
+<td class="left">match end of a string</td>
+</tr>
+
+<tr>
+<td class="left">i</td>
+<td class="left">case-insensitive</td>
+</tr>
+</tbody>
+</table>
+<p>
+Applying the regex to the <code>email</code> format validation yields:
+</p>
+<pre class="example">
+validates :email, presence: true, length: { maximum: 255 }, 
+                  format: { with: VALID_EMAIL_REGEX }
+</pre>
+<p>
+The regex <code>VALID_EMAIL_REGEX</code> is a <i>constant</i>, idicated in Ruby by a
+name starting with a capital letter. 
+Note: the regex above allows multiple dots like <code>foo@bar..com</code>. The
+following is a fix: <code>VALID_EMAIL_REGEX =
+/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i</code>. 
+</p>
+
+<p>
+Uniqueness validation. <br  />
+To enforce uniqueness of email addresses (so that we can use them as
+usernames), we'll be using the <code>:unique</code> option in the <code>validates</code>
+method. We start with some tests. We cannot use <code>User.new</code> as before,
+this behavior requires persisting to the database to ensure uniquess
+at the persistence level. <br  />
+We specify that the behavior of saving two users with the same email
+should not be valid (via the <code>dup</code> method). 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">test "email addresses should be unique" do
+  duplicate_user = @user.dup
+  @user.save
+  assert_not duplicate_user.valid?
+end
+</pre>
+</div>
+<p>
+Adding <code>uniqueness: true</code> to the User email <code>validates</code> method yields
+the desired GREEN. <br  />
+Email addresses are typically processed as if they were
+case-insensitive&#x2013;i.e,=foo@bar.com= is the same as <code>FOO@BAR.COM</code> or
+<code>FoO@BAr.coM</code>&#x2013; so our validation should incorporate this as
+well. Adding the following line to our email unique example test
+yields a failing test:
+</p>
+<pre class="example">
+duplicate_user.email = @user.email.upcase
+</pre>
+<p>
+If this test feels a little abstract, go ahead and fire up the
+console:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">$ rails console --sandbox
+&gt;&gt; user = User.create(name: "Example User", email: "user@example.com")
+&gt;&gt; user.email.upcase
+=&gt; "USER@EXAMPLE.COM"
+&gt;&gt; duplicate_user = user.dup
+&gt;&gt; duplicate_user.email = user.email.upcase
+&gt;&gt; duplicate_user.valid?
+=&gt; true
+</pre>
+</div>
+<p>
+Hence the test is RED. <code>uniqueness</code> accepts an option:
+<code>case_sensitive: false</code>. This yields the desired GREEN. 
+Problem: Active Record uniqueness validation does not guarantee
+uniqueness at the database level. 
+Consider the scenario:
+</p>
+<ol class="org-ol">
+<li>Alice uses <code>alice@wonderland.com</code>
+</li>
+<li>Alice clicks 'Submit' twice, sending two quick requests
+</li>
+<li>Requests pass validation in memory, so both are persisted:
+<ol class="org-ol">
+<li>Request 1 creates a user in memory that passes validation
+</li>
+<li>Request 2 does the same and also pases validation
+</li>
+<li>Request 1's user gets saved
+</li>
+<li>Request 2's user gets saved
+</li>
+</ol>
+</li>
+<li>Result: two user records with the same email despite the uniqueness
+validation
+</li>
+</ol>
+<p>
+Solution: enforce uniqueness at the database level as well as the
+model level. Our method: create a database <i>index</i> on the email column
+and require that index to be unique. <br  />
+Dealing with the database level requires migrations:
+</p>
+<pre class="example">
+$ rails generate migration add_index_to_users_email
+</pre>
+<p>
+Unlike the users migration, the
+<code>[timestamp]_add_index_to_users_email.rb</code> migration is not
+pre-defined, so we fill in its contents: 
+</p>
+<pre class="example">
+class AddIndexToUsersEmail &lt; ActiveRecord::Migration[5.0]
+  def change
+    add_index :users, :email, unique: true
+  end
+end
+</pre>
+<p>
+We migrate the database <code>$ rails db:migrate</code>. (If this fails, try
+exiting any running sandbox console sessions, which can lock the
+database and prevent migrations.)
+Remark: an alternative to generating a new migration is to add these
+changes to the <code>users</code> <code>change</code> method. This requires rolling back
+then migrating up. <br  />
+Note. The Rails Way is to use migrations every time we discover that
+our data model needs to change. <br  />
+#+TODO implement this scenrio when learning ruby threads
+Already attempted this using Ruby multi-assignement
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby"> alice = User.new(name: "Alice", email: "alice@wonderland.com")
+ =&gt; #&lt;User id: nil, name: "Alice", email: "alice@wonderland.com", 
+    created_at: nil, updated_at: nil&gt; 
+2.3.1 :009 &gt; alice2 = alice.dup
+ =&gt; #&lt;User id: nil, name: "Alice", email: "alice@wonderland.com", 
+    created_at: nil, updated_at: nil&gt; 
+2.3.1 :010 &gt; r1, r2 = alice.save, alice2.save
+   (0.2ms)  SAVEPOINT active_record_1
+  User Exists (0.4ms)  SELECT  1 AS one FROM "users" 
+    WHERE "users"."email" = $1 LIMIT $2  [["email", "alice@wonderland.com"],
+     ["LIMIT", 1]]
+  SQL (0.3ms)  INSERT INTO "users" ("name", "email", 
+    "created_at", "updated_at") VALUES ($1, $2, $3, $4) 
+    RETURNING "id"  [["name", "Alice"], ["email", "alice@wonderland.com"], 
+    ["created_at", 2016-08-21 21:17:13 UTC], 
+    ["updated_at", 2016-08-21 21:17:13 UTC]]
+   (0.1ms)  RELEASE SAVEPOINT active_record_1
+   (0.1ms)  SAVEPOINT active_record_1
+  User Exists (0.2ms)  SELECT  1 AS one FROM "users" WHERE "users"."email" =
+     $1 LIMIT $2  [["email", "alice@wonderland.com"], ["LIMIT", 1]]
+   (0.1ms)  ROLLBACK TO SAVEPOINT active_record_1
+ =&gt; [true, false] 
+2.3.1 :011 &gt; r1, r2 = alice.valid?, alice2.valid?
+  User Exists (0.6ms)  SELECT  1 AS one FROM "users" WHERE "users"."email" =
+     $1 AND ("users"."id" != $2) LIMIT $3  [["email", "alice@wonderland.com"], 
+    ["id", 2], ["LIMIT", 1]]
+  User Exists (0.3ms)  SELECT  1 AS one FROM "users" WHERE "users"."email" = 
+    $1 LIMIT $2  [["email", "alice@wonderland.com"], ["LIMIT", 1]]
+ =&gt; [true, false]
+</pre>
+</div>
+
+
+<p>
+Database indices. <br  />
+When creating a column in a database, it's important to consider if we
+need to <i>find</i> records by that column. For example, when we allow
+users to log in the sample app, we need to find the corresponding user
+to the submitted email address. With the current data model, we must
+do a linear search (key being the email requested) through all the
+users of the database&#x2013; i.e a <i>full-table</i> scan. 
+Providing an inedex on the email column fixes the problem.
+</p>
+
+<p>
+After migrating. The test suite is RED due to violation of the
+uniqueness constraint in the <i>fixtures</i>, which contain sample data for
+the test database. Fixture data doesn't run through validations so
+they did not fail earlier tests. They are persisted in the test
+database and bc they have the same email, all tests fail. 
+</p>
+<div class="org-src-container">
+
+<pre class="src src-ruby">one:
+  name: MyString
+  email: MyString
+
+two:
+  name: MyString
+  email: MyString
+</pre>
+</div>
+<p>
+Simply removing the contents of the file passes the tests. 
+</p>
+
+<p>
+Some databases use case-sensitive indices, but our app treats them the
+same. To avoid this incompatibility, we'll standardize on all
+lower-case addresses using a <code>before_save</code> callback in the <code>User</code> model. 
+</p>
+<pre class="example">
+before_save { self.email = email.downcase }
+</pre>
+<p>
+At this point, the Alice scenario above will work fine. 
+</p>
+
+<p>
+<b>Adding a secure password</b>. <br  />
+Method: require each user to have a password (w/ password
+confirmation), then store a <i>hashed</i> version in the database. We add a
+way to <i>authenticate</i> a user based on a given password (cf. ch8) to
+allow users to log in to the site.  Here a <i>hash</i> refers to the result
+of applying an irreversible hash function to input data. <br  />
+Authenticating users :
+</p>
+<ol class="org-ol">
+<li>take a submitted password
+</li>
+<li>hash it
+</li>
+<li>compare the result to the hashed value stored in the database
+</li>
+<li>if the two math, then submitted password is correct (user authenticated)
+</li>
+</ol>
+<p>
+By comparing hashed values instead of raw passwords, we will be able to
+authenticate users without storing the raw passwords themeselves. Even
+if our database is compromised, our users' passwords will still be
+secure.
+</p>
+
+<p>
+A hashed password. <br  />
+Most of the secure password machinery will be implemented using a
+single Rails method <code>has_secure_password</code>. When included, it adds:
+</p>
+<ul class="org-ul">
+<li>ability to save securely hashed <code>password_digest</code> attribute to db
+</li>
+<li>pair of virtual attributes (<code>password</code> &amp; <code>password_confirmation</code>)
+</li>
+<li><code>authenticate</code> method that returns the user when password is correct
+</li>
+</ul>
+<p>
+The model must have a <code>password_digest</code> attribute (synonymous with
+hashed password). <br  />
+To add the <code>password_digest</code> attribute to the <code>User</code> model we must
+create a migration: <code>$ rails g migration add_password_digest_to_users
+password_digest:string</code>. Then migrate up. <br  />
+To make the password digest, <code>has_secure_password</code> uses a bcrypt (via
+the bcrypt gem).
+</p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Amarildo Zeneli</p>
-<p class="date">Created: 2016-08-21 Sun 13:09</p>
+<p class="author">Author: az</p>
+<p class="date">Created: 2016-08-23 Tue 13:27</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
