@@ -1,0 +1,13 @@
+<h1><%= @user.name %></h1>
+<br>
+<h2><%= @user.email %></h2>
+
+<aside>
+  <p>
+    User since: <%= @user.created_at %>
+    <br>
+    Last updated: <%= @user.updated_at %>
+  </p>
+  <p>
+    Now: <%= Time.now %>
+</aside>

@@ -1589,3 +1589,7 @@ def gravatar_for(user)
   image_tag(gravatar_url, alt: user.name, class: "gravatar")
 end
 #+END_SRC
+We add a user sidebar using the =aside= tag with bootstrap styling
+(viz. =row= and =col-md-4= classes). With the html elements and css
+classes in place, we can style the profile page w/ scss inside the
+=app/assets/stylesheets/custom.scss=. 
