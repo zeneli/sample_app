@@ -1474,3 +1474,19 @@ What we learned in this chapter. \\
 - we can add a secure password to a model using the built-in
   =has_secure_password= method
 
+* Sign up
+User sign up worflow:
+- user submits html form with singup information (cf 7.2)
+- app creates a new user and saves its attributes to the database
+  (cf. 7.4)
+- the app renders a profile page w/ the newly created user information
+We begin w/ a page /showing/ users (as a first step towards our REST
+architecture for users). \\
+We rely on the User model validations to increase the odds of new
+users having valid emails. In ch11, we'll make sure of email validity
+by adding a separate account activation step.
+
+*Showing users*. \\
+We make a page to display a user's name and profile photo (eventually
+we're creating a profile page to show a user's profile image, basic
+user data, and a list of microposts). 
