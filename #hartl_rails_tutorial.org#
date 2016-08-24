@@ -1593,3 +1593,13 @@ We add a user sidebar using the =aside= tag with bootstrap styling
 (viz. =row= and =col-md-4= classes). With the html elements and css
 classes in place, we can style the profile page w/ scss inside the
 =app/assets/stylesheets/custom.scss=. 
+
+*Singup form*. \\
+
+Using =form_for=. \\
+The =form_for= helper method takes in an active record  object and
+builds a form using the object's attributes. Since =/signup= is routed
+to the =new= action in the Users controller, we first create the User
+object required as an argument to =form_for=:
+: @user = User.new
+
