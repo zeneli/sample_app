@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>hartl_rails_tutorial</title>
-<!-- 2016-08-24 Wed 13:04 -->
+<!-- 2016-08-24 Wed 13:03 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="az" />
@@ -2144,11 +2144,10 @@ the bcrypt gem).
 
 <p>
 User has secure password. <br  />
-After adding the <code>has_secure_password</code> (see
-<a href="http://api.rubyonrails.org/classes/ActiveModel/SecurePassword/ClassMethods.html#method-i-has_secure_password">ActiveModel::SecurePassword::ClassMethods)</a> to the User model and
-running the tests, we see RED on the tests that assert validity of the
-<code>@user</code> from setup. All other tests using <code>assert_not</code> remain passing
-since the model remains invalid but now for the wrong reasons (like test
+After adding the <a href="http://api.rubyonrails.org/classes/ActiveModel/SecurePassword/ClassMethods.html#method-i-has_secure_password">has<sub>secure</sub><sub>password</sub></a> to the User model and running the
+tests, we see RED on the tests that assert validity of the <code>@user</code>
+from setup. All other tests using <code>assert_not</code> remain passing since
+the model remains invalid but now for the wrong reasons (like test
 "name should be present"). <code>has_secure_password</code> enforces validation
 on the virtual <code>password</code> and <code>password_confirmation</code> attributes, but
 the tests create a <code>@user</code> variable w/out these attributes. <br  />
@@ -2188,7 +2187,7 @@ Since users can't sign up through the web (goal in ch7), we use the
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: az</p>
-<p class="date">Created: 2016-08-24 Wed 13:04</p>
+<p class="date">Created: 2016-08-24 Wed 13:03</p>
 <p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>

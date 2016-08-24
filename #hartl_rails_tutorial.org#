@@ -1452,3 +1452,10 @@ name itself implies the behavior.
 Creating and authenticating a user. \\
 Since users can't sign up through the web (goal in ch7), we use the
 =create= method.
+
+*Conclusion*. \\
+Starting from scratch, we have a User model w/ name, email, and
+password attributes w/ enforcing validations). We have the ability to
+securely authenicate users using a given password (all in twelve lines
+of code). \\
+In ch7 
