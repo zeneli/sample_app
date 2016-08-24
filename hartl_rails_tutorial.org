@@ -1460,3 +1460,17 @@ securely authenicate users using a given password (all in twelve lines
 of code). \\
 In ch7, we make a working signup form to create new users w/ a page
 displaying each users information. 
+
+What we learned in this chapter. \\
+- migrations allow us to modify our application's data model
+- active record comes w/ a large number of methods for creating and
+  manipulating data models
+- active record validations allow us to place constraints on the data
+  in our models
+- common validations include presence, length, and format
+- regular expressions are cryptic but powerful
+- defining a database index improves lookup efficiency while allowing
+  enforcement of uniqueness at the database level
+- we can add a secure password to a model using the built-in
+  =has_secure_password= method
+
