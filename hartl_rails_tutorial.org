@@ -1589,3 +1589,100 @@ def gravatar_for(user)
   image_tag(gravatar_url, alt: user.name, class: "gravatar")
 end
 #+END_SRC
+We add a user sidebar using the =aside= tag with bootstrap styling
+(viz. =row= and =col-md-4= classes). With the html elements and css
+classes in place, we can style the profile page w/ scss inside the
+=app/assets/stylesheets/custom.scss=. 
+
+*Singup form*. \\
+
+Using =form_for=. \\
+The =form_for= helper method takes in an active record  object and
+builds a form using the object's attributes. Since =/signup= is routed
+to the =new= action in the Users controller, we first create the User
+object required as an argument to =form_for=:
+#+BEGIN_SRC ruby
+.../users_controller.rb
+  def new
+    @user = User.new
+  end
+
+.../new.html.erb
+  <div class="col-md-6 col-md-offset-3">
+    <%= form_for(@user) do |f| %>
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+    <%= f.label :email %>
+    <%= f.text_field :email %>
+    <%= f.label :password %>
+    <%= f.text_field :password %>
+    <%= f.label :password_confirmation %>
+    <%= f.text_field :password_confirmation %>
+    <%= f.submit "Create my account", class: "btn btn-primary" %>
+    <% end %>
+  </div>
+#+END_SRC
+
+Signup form. \\
+: <%= form_for(@user) do |f| %>
+: ...
+: <% end %>
+The =form_for= take a block w/ one variable (viz. =|f|= for
+"form"). When the =f= object is called w/ a method corresponding to an
+html form element, =f= returns code for that element specifically
+design to set an attribute of the =@user= object.
+So =f.label= & =f.text_field= create the html needed to make a labeled
+text field element appropriate for setting the =name= attribute of a
+User model. The generated html attribute types =text= & =email= simply
+display their contents, whereas type =password= obscures the input for
+security reasons. Actually type =email= will cause mobile devices to
+display a special keyboard optimized for entering email addresses. \\
+As we see, the key to creating a yser us the special =name= attribute
+in each =input=. They allow Rails to construct an initialization hash
+(via the =params= variable) for creating users using the form
+values. \\
+Rails creates the =form= tag using the =@user= object: bc every Ruby
+object knows its own class (Rails figures out that =@user= is of class
+=User=). Moreover, since =@user= is a /new/ user (by the =new= method
+call), Rails knows to construct a form w/ the =post= method. 
+#+BEGIN_SRC ruby
+<%= f.label :name %>
+<%= f.text_field %>
+# produces the HTML
+<label for="user_name">Name</label>
+<input id="user_name" name="user[name]" type="text" />
+
+<%= f.label :email %>
+<%= f.email_field :email %>
+# produces the HTML 
+<label for="user_email">Email</label>
+<input id="user_email" name="user[email]" type="email" />
+
+<%= f.label :password %>
+<%= f.password_field :password %>
+# produces the HTML
+<label for="user_password">Password</label>
+<input id="user_password" name="user[password]" type="password" />
+
+<input name="utf8" type="hidden" value="&#x2713;" />
+<input name="authenticity_token" type="hidden"
+       value="NNb6+J/j46LcrgYUC60wQ2titMuJQ5lLqyAbnbAUkdo=" />
+#+END_SRC
+This code, which isn’t displayed in the browser, is used internally by
+Rails, so it’s not important for us to understand what it
+does. Briefly, it uses the Unicode character &#x2713; (a checkmark ✓)
+to force browsers to submit data using the right character encoding,
+and then it includes an authenticity token, which Rails uses to thwart
+an attack called a cross-site request forgery (CSRF). Knowing when
+it’s OK to ignore details like this is a good mark of technical
+sophistication (Box 1.1).).
+
+*Unsuccessful signups*. \\
+We'll create a signup form that accepts an invalid submission and
+re-renders the signup page with a list of errors.
+
+A working form. \\
+Our strategy for the =create= action is to use the form submission to
+make a new user object using the =User.new= to save that user, and
+then render the signup page for possible resubmission. 
+* TODO finish ch7 notes
