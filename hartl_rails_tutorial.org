@@ -1741,6 +1741,9 @@ attributes (but not others), as follows:
 =params.require(:user).permit(:name, :email, ...)=. The code returns a
 version of the =params= hash with only the permitted attributes (while
 raising an error if the =:user= attributes is missing). \\
+Since user_params will only be used internally by the Users controller
+and need not be exposed to external users via the web, we’ll make it
+private using Ruby’s private keyword.
 #+BEGIN_SRC ruby
 def create
     @user = User.new(user_params)
@@ -1758,3 +1761,56 @@ def create
                                    :password_confirmation)
     end
 #+END_SRC
+
+Signup error messages. \\
+As a final step in handling failed user creation, we'll add helpful
+error messages to indicate the problem that prevented successful
+signup. On a failed call of =user.save=, we can inspect what failed
+validation via =user.errors.full_messages=. To display the messages in
+the browser, we'll render an error-messages partial on the user =new=
+page while adding the CSS class =form-control= to each entry. Note: we
+=render= a partial called ='shared/error_messages'=; this reflects a
+common Rails convention of using a dedicated =shared/= directory for
+partials expected to be used in views accross multiple controllers.
+
+A test for invalid submission. \\
+We write tests to automate the testing of forms to verify the correct
+behavior upon invalid form submission. First we generate an
+integration test file for signing up users, which we'll call
+=users_signup= (adopting the controller convention of plural resource
+name):
+: $ rails generate integration_test users_signup
+We verify that clicking the signup button results in /not/ creating a
+new user when the submitted information is invalid. We check the
+/count/ of users, and under the hood our tests will use the =count=
+method (available on every Active Record class, including =User=). \\
+#+BEGIN_SRC ruby
+$ rails console
+>> User.count
+=> 1
+#+END_SRC
+
+
+*Successful signups*
+We handle saving anew user (if valid) to the database. 
+- First, we try to save the user;
+- if the save succeeds, the user's information gets written to the
+  database automatically, and
+- we then /redirect/ the browser to show the users profile (w/ a
+  greeting)
+
+The finished signup form. \\
+To complete a working signup form (which freezes on submission), we
+need to handle the successful branch of submit. The defualt behavior
+for a Rails action is to render the corresponding view, and there
+isn't a view template corresponding to =create=. 
+
+The flash. \\
+We add a message that appears on the subsequent page (welcoming our
+new user to our application) and then disappears upon visiting a
+second page or on page reload. \\
+The Rails way to display a temporary message is via a method called
+the /flash/, which we treat like a hash. Rails adopts the convention
+of a =:success= key for a message indicating a successful result. 
+
+A test for valid submission. \\
