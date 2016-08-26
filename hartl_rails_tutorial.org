@@ -1684,5 +1684,77 @@ re-renders the signup page with a list of errors.
 A working form. \\
 Our strategy for the =create= action is to use the form submission to
 make a new user object using the =User.new= to save that user, and
-then render the signup page for possible resubmission. 
-* TODO finish ch7 notes
+then render the signup page for possible resubmission. Recall, from
+the sign up we have:
+: <form action="/user" class="new_user" id="new_user" method="post">
+Our first implementation is to pass the generate =:user= (submitted by
+the sign up form) to via the =params= method to =User.new= in the
+=create= action. If unsuccessful, i.e. we cannot save the user, the
+render the new action:
+#+BEGIN_SRC ruby
+def create
+  @user = User.new(params[:user])  # not the final implementation
+  if @user.save
+    # Handle a successful save.
+  else
+    render 'new'
+  end
+end
+#+END_SRC
+When submitting the form with some invalid signup data, we get an
+=ActiveModel::ForbiddenAttributesError=. The user hash gets passed to
+the Users controller as part of =params=. In the case of posting to
+the sign up form, =params= instead contains a hash of hashes.
+#+BEGIN_SRC ruby
+"user" => { "name" => "Foo Bar",
+            "email" => "foo@invalid",
+            "password" => "[FILTERED]",
+            "password_confirmation" => "[FILTERED]"
+          }
+
+# the following two are essentially equivalent
+@user = User.new(params[:user])
+@user = User.new(name: "Foo Bar", email: "foo@invalid",
+                 password: "foo", password_confirmation: "bar")
+#+END_SRC
+
+Strong parameters. \\
+Recall: /mass assignment/ involves initializing a Ruby variable using
+a hash of values. Initializing the entire =params= hash is dangerous--
+it arranges to pass =User.new= all data submitted by the
+user. Suppose, in addition to the current attributes, the User model
+included an =admin= attibute to identify administrative users of the
+site. To set such attribute =true= requires passing the value
+: admin='1'
+as part of =param[:user]=. Any client can do this via =curl=, hence
+any client has access to administrative priveleges. \\
+Previous versions of Rails used =attr_accessible= in the /model/ layer
+to solve this problem, but the preferred technique is to use /strong
+parameters/ (in the controller layer). Strong parmaters allow the
+developer to specify which parameters are /required/ and which ones
+are /permitted/. In addition, passing in a raw =params= hash as above
+will cause an error to be raised, so that Rails applications are now
+immune to mass assignment vulnerabilities by default. \\
+We require the =params= hash to have a =:user= attribute, and we want
+to permit the name, email, password, and password_confirmation
+attributes (but not others), as follows:
+=params.require(:user).permit(:name, :email, ...)=. The code returns a
+version of the =params= hash with only the permitted attributes (while
+raising an error if the =:user= attributes is missing). \\
+#+BEGIN_SRC ruby
+def create
+    @user = User.new(user_params)
+    if @user.save
+      # Handle a successful save.
+    else
+      render 'new'
+    end
+  end
+
+  private
+
+    def user_params
+      params.require(:user).permit(:name, :email, :password,
+                                   :password_confirmation)
+    end
+#+END_SRC
