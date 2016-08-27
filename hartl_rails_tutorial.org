@@ -1814,3 +1814,24 @@ the /flash/, which we treat like a hash. Rails adopts the convention
 of a =:success= key for a message indicating a successful result. 
 
 A test for valid submission. \\
+
+*Professional-grade deployment*. \\
+Now that we have a working signup page, we will make the deployment
+professional-grade. We add an important feature to the production app
+to make signup secure, and replace the default webserver w/ one
+suitable for real-world use. 
+
+SSL in production. \\
+We use Secure Sockets Layer to encrypt all relevant information before
+it leaves the users local broser (via the submittion form). We use SSL
+site-wide for two reasons: easier implementation and immune to the
+critical seesion hijacking vulnerability (cf. 9.1). We enable SSL by
+adding  =config.force_ssl = true= in
+=config/environments/production.rb=. \\
+Setting up a production site to use SSL requires purchasing and
+configuring an SSL certificate for your domain. For applications
+running on a Heroku domain, we can piggyback on Heroku's SSL
+certificate (automatically enabled). 
+
+Production webserver. \\
+By default, Heroku uses a pure-Ruby webserver called WEBrick, which is easy to set up and run but isn’t good at handling significant traffic. As a result, WEBrick isn’t suitable for production use, so we’ll replace WEBrick with Puma, an HTTP server that is capable of handling a large number of incoming requests. 
