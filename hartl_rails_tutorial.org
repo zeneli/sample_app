@@ -1889,4 +1889,31 @@ and will then optionally remember users based on the value of a
 'remember me' checkbox.
 
 *Sessions*. \\
+HTTP is a stateless protocol. Treating each request as an independent
+transaction that is unable to use information from any previous
+request. The most common technique for implementing sessions in Rails
+involves using cookies, which are small pieces of text placed on the
+user's browser. We use the Rails method called =session= to make
+temporary sessions that expire automatically on browser close. In ch9,
+we'll learn how to make longer-lived sessions using the closely
+related =cookies= method. \\
+We model sessions as a RESTful resource:
+- visiting the login page will render a form for /new/ sessions,
+- logging in will /create/ a session,
+- and logging out will /destroy/ it.
+The session resource will use cookies, and much of the work involved
+in login comes from building this cookie-based authentication
+machinery. \\
+We will prepare for constructing a Sessions controller, a login form,
+and the relevant controller actions. We'll then complete user login by
+adding the necessary session-manipulation code.
+
+Sessions controller. \\
+Logging in and out correspond to particular REST actions of the
+Sessions controller:
+- the login form is handled by the =new= action
+- logging in is handled by sending a POST request to the =create= action
+- logging out is handled by sending a DELETE request to the =destroy=
+  action
+
 
