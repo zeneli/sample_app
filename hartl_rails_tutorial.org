@@ -1834,4 +1834,59 @@ running on a Heroku domain, we can piggyback on Heroku's SSL
 certificate (automatically enabled). 
 
 Production webserver. \\
-By default, Heroku uses a pure-Ruby webserver called WEBrick, which is easy to set up and run but isn’t good at handling significant traffic. As a result, WEBrick isn’t suitable for production use, so we’ll replace WEBrick with Puma, an HTTP server that is capable of handling a large number of incoming requests. 
+By default, Heroku uses a pure-Ruby webserver called WEBrick, which is
+easy to set up and run but isn’t good at handling significant
+traffic. As a result, WEBrick isn’t suitable for production use, so
+we’ll replace WEBrick with Puma, an HTTP server that is capable of
+handling a large number of incoming requests.
+
+Conclusion. \\
+We have laid an essential foundation for all future development. In
+ch8 and ch9 we complete our authentication machinery by allowing users
+to log in and out of the app (w/ optional 'remember me'
+functionality). In ch10, we allow all users to update their account
+information, and we allow site administrators to delete users, thereby
+completing the full suite of Users resource REST actions from the
+users section of =$ rails r=.
+
+What we learned in this chapter:
+- Rails displays useful debug information via the debug method.
+- Sass mixins allow a group of CSS rules to be bundled and reused in
+  multiple places.
+- Rails comes with three standard environments: development, test, and production.
+- We can interact with users as a resource through a standard set of REST URLs.
+- Gravatars provide a convenient way of displaying images to represent users.
+- The form_for helper is used to generate forms for interacting with
+  Active Record objects.
+- Signup failure renders the new user page and displays error messages
+  automatically determined by Active Record.
+- Rails provides the flash as a standard way to display temporary messages.
+- Signup success creates a user in the database and redirects to the
+  user show page, and displays a welcome message.
+- We can use integration tests to verify form submission behavior and
+  catch regressions.
+- We can configure our production application to use SSL for secure
+  communications and Puma for high performance.
+* Basic login
+We’ll implement a basic but still fully functional login system: the
+application will maintain the logged-in state until the browser is
+closed by the user. The authentication system will be customized based
+on login status and identity of the current user. For example, we'll
+be able to update the site header w/ login/logout links and a profile
+link. \\
+In ch10, we impose a security model in which:
+- only logged-in users can visit the user index page,
+- only the correct user can access the page for editing thier information,
+- and only admin users can delete other users from the database.
+In ch13, we use the identity of a logged-in user to create microposts
+associated w/ the user. Ch14 allows the current user to follow other
+users of the application (thereby receiving a feed of their
+microposts). \\
+The authentication system from this chapter will serve as a foundation
+for the more advanced system of ch9 where, instead of 'forgetting'
+users on browser close, we start by /automatically/ remembering users,
+and will then optionally remember users based on the value of a
+'remember me' checkbox.
+
+*Sessions*. \\
+
