@@ -2926,7 +2926,9 @@ Active Record model. Instead, we'll put a message in the flash to be
 displayed upon failed login. \\
 Bc of the flash message display in the site layout, the
 =flash[:danger]= message automatically gets displayed. The page looks
-fine, but the contents of the flash persist for one request longer.
+fine, but the contents of the flash persist for one request longer. \\
+
+
 #+BEGIN_SRC ruby
 
 
