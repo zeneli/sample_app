@@ -1901,9 +1901,9 @@ We model sessions as a RESTful resource:
 - visiting the login page will render a form for /new/ sessions,
 - logging in will /create/ a session,
 - and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
+The session resource will use cookies (small piece of text placed on
+the user's browser), and much of the work involved in login comes from
+building this cookie-based authentication machinery. \\
 We will prepare for constructing a Sessions controller, a login form,
 and the relevant controller actions. We'll then complete user login by
 adding the necessary session-manipulation code.
@@ -1911,936 +1911,154 @@ adding the necessary session-manipulation code.
 Sessions controller. \\
 Logging in and out correspond to particular REST actions of the
 Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
+- =GET new=: the login form is handled by the =new= action
+- =POST create=: logging in is handled by sending a POST request to the =create= action
+- =DELETE destroy= logging out is handled by sending a DELETE request to the =destroy=
   action
+We begin by generating a Sessions controllers w/ a =new= action:
+ : $ rails generate controller Sessions new
+Following the model of the sign up page, our plan is to create a login
+form for creating a new sessions. Unlike the Users resource, which
+used the special =resource= method to get the full suite of RESTfull
+routes, the Sessions resource will use only named routes, handling
+the routes specified above:
+: ./config/routes.rb
+: get    '/login',    to: 'sessions#new'
+: post   '/login',    to: 'sessions#create'
+: delete '/logout',   to: 'sessions#destroy'
+Since we've added several custom named routes, it's useful to look at
+the complete list of route for our application via =$ rails
+routes=. Viewing the routes in this manner gives us a high-level
+overview of the actions supported by our applications.
 
+Login form. \\
+Having defined the relevant controller and route, now we'll fill in
+the view for new sessions, i.e., the login form. The login form is
+similar in appearance to the signup form, except with two fields
+(email and password) in place of four. \\
+When login information is invalid, we want to re-render the login page
+and display an error message. We used error-messages partial to
+display error messages, but we saw in that section that those messages
+are provided automatically by Active Record. This won't work for
+session creation errors bc the session isn't an Active Record object,
+so we'll render the error as a flash message instead. \\
+Recall, the signup form uses the =form_for= helper, taking as an
+argument the user instance variable =@user= (see signup form). 
+=form_for(@user)= allows Rails to infer that =action= of the form
+should be to =POST= to the URL =/users=, in the case of sessions we
+need to indicate the /name/ of the resource and the corresponding URL:
+ : for_for(:session, url: login_path)
+With the proper =form_for=, it's easy to make a login form to match
+the mockup using the signup form as a model:
+#+BEGIN_SRC ruby
+<% form_for(:session, url: login_path) do |f| %>
+  <%= f.label :email %>
+  <%= f.email_field :email, class: 'form-control' %>
 
+  <%= f.label :password %>
+  <%= f.password_field :password, class: 'form-control' %>
 
+  <%= f.submit "Log in", class: "btn btn-primary" %>
+<% end %>
+#+END_SRC
 
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
+Finding and authenticating a user. \\
+As in the case of creating users (signup), the first step in creating
+sessions (login) is to handle /valid/ input. We 
+- review what happens when a form gets submitted
+- then arrange for helpful error messages to appear in the case of login failure
+- then lay the foundations for successful login by evaluating each
+  login submission based on the validity of its email/password
+  combination
+We start w/ a minimalist =create= action for the Sessions controller
+and add an empty action =new= and =destroy=. \\
+Inspecting the debug information, the submission results in a =params=
+hash containing the email and password under the key =session= (see
+below). As weas in the case of the user signup, these parameters form
+a nested hash like the one for the user signup. In particular,
+=params= contains a nested hash of the form: ={ session: { password:
+"...", email: "..." } }=. This means that =params[:session]= is itself
+a hash. Hence, inside the =create= action the =params= hash has all
+the information needed to authenticate users by email and
+password.
+#+BEGIN_SRC ruby
+--- !rub/object:ActionController::Parameters
+session: !ruby/object:ActionController::Parameters
+  parameters: !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+    email: ...
+    password: ...
+...
+#+END_SRC
+ Not coincidentally, we already have a method for
+=User.find_by= method provided by =has_secure_password=. Recall,
+=authenticate= returns false for an invalid authentication. Our
+strategy for user login can be summarized as 
+: if user exists AND user is authenticated
+:  user = find user by (lowercase) email
+:  Log the user in and redirect to the user's show page
+: else
+:  Create an error message
+:  render 'new'
+The =&&= (logical /and/) is used to determine if the resulting user is
+valid. Taking into account that any object other than =nil= and
+=false= itself is =true= in a boolean context, the possibilities are:
+| User        | Password       | a && b                       |
+| nonexistent | anything       | (nil && [anything]) == false |
+| valid user  | wrong password | (true && false) == false     |
+| valid user  | right password | (true && true) == true       |
 
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
+Rendering with a flash message. \\
+Recall- we displayed the signup errors using the User model error
+messages:
+#+BEGIN_SRC ruby
+./app/views/shared/_error_message.html.erb
+<% if @user.errors.any? %>
+<div id="error_explanation">
+  <div class="alert alert-danger">
+    The form contains <%= pluralize(@user.errors.count, "error") %>
+  </div>
+  <ul>
+    <% @user.errors.full_messages.each do |msg| %>
+    <li><%= msg %></li>
+    <% end %>
+  </ul>
+</div>
+<% end %>
 
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
+./app/views/users/new.html.erb
+  <%= form_for(@user, url: signup_path) do |f| %>
+    <%= render 'shared/error_messages' %>
+    ...
+  <% end %>
+#+END_SRC
+The errors are associated w/ a particular Active Record object, but
+this strategy won't work here bc the session isn't an active record
+model. Instead, we'll put a message in the flash to be displayed upon
+failed login as:
+: flash[:danger] = 'Invalid email/password combination'
+Bc of the flash message display in the site layout, the
+=flash[:danger]= message automatically gets displayed and styled by
+the Bootstrap CSS:
+#+BEIGN_SRC ruby
+./app/views/layouts/application.html.erb
+<div class="container">
+  <% flash.each do |message_type, message| %>
+  <div class="alert alert-<%= message_type %>">
+    <%= message %>
+  </div>
+<% end %>
+#+END_SRC
+Unfortunately, this code isn't quite right. The page looks fine, but
+the issue is that the contents of the flash persist for one /request/,
+but--unlike a redirect-- re-rendering a template with =render= doesn't
+count as a request. The result is the flash message persists one
+request longer than we want. \\
+Ex- submitting an invalid login information and then clicking on the
+Home page results in the flash message displayed a second time. We
+will fix this belimish next.
 
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-
-
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-
-
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-
-
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-
-
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-
-We’ll implement a basic but still fully functional login system: the
-application will maintain the logged-in state until the browser is
-closed by the user. The authentication system will be customized based
-on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
-link. \\
-In ch10, we impose a security model in which:
-- only logged-in users can visit the user index page,
-- only the correct user can access the page for editing thier information,
-- and only admin users can delete other users from the database.
-In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
-users of the application (thereby receiving a feed of their
-microposts). \\
-The authentication system from this chapter will serve as a foundation
-for the more advanced system of ch9 where, instead of 'forgetting'
-users on browser close, we start by /automatically/ remembering users,
-and will then optionally remember users based on the value of a
-'remember me' checkbox.
-
-*Sessions*. \\
-HTTP is a stateless protocol. Treating each request as an independent
-transaction that is unable to use information from any previous
-request. The most common technique for implementing sessions in Rails
-involves using cookies, which are small pieces of text placed on the
-user's browser. We use the Rails method called =session= to make
-temporary sessions that expire automatically on browser close. In ch9,
-we'll learn how to make longer-lived sessions using the closely
-related =cookies= method. \\
-We model sessions as a RESTful resource:
-- visiting the login page will render a form for /new/ sessions,
-- logging in will /create/ a session,
-- and logging out will /destroy/ it.
-The session resource will use cookies, and much of the work involved
-in login comes from building this cookie-based authentication
-machinery. \\
-We will prepare for constructing a Sessions controller, a login form,
-and the relevant controller actions. We'll then complete user login by
-adding the necessary session-manipulation code.
-
-Sessions controller. \\
-Logging in and out correspond to particular REST actions of the
-Sessions controller:
-- the login form is handled by the =new= action
-- logging in is handled by sending a POST request to the =create= action
-- logging out is handled by sending a DELETE request to the =destroy=
-  action
-: $ rails generate controller Sessions new
-Including =new= actually generates /views/ as well, which is why we
-don't include actions like =create= and =destroy= that don't
-correspond to views. \\
-Unlike the Users resource, which used the special =resources= method
-to obtain a full suite of RESTful routes automatically, the Sessions
-resource will use only name routes, handling GET and POST requests w/
-the =login= route and DELETE request w/ the =logout= route. 
+A flash test. \\
+The incorrect flash behavior is a minor bug in our application. 
 * TODO why do we have two alia for user#new
 One alias is GET user#new for signup, I guess after signing up you get
 that user returned back
@@ -2946,3 +2164,103 @@ def create
 end
 ...
 #+END_SRC
+
+A flash test. \\
+The incorrect flash behavior has a minor bug in our app. We'll thus
+write a test to catch the error so that it doesn't recur. We'll thus
+write a short integration test for the login form submission before
+proceeding. In addition to documenting the bug and preventing a
+regression, this will also give us a good founddation for further
+integration tests of login and logout. \\
+The way to get the failing test to pass is to replace =flash= w/
+=flash.now= (designed for displaying flash messages on rendered
+pages). The contents of =flash.now= disappear as soon as there is
+an addtional request (exactly the behavior our
+=test/integration/users_login_test.rb= expect).
+
+*Logging in*. \\
+Now that our login can handle invalid submissions, the next step is to
+handle valid submissions correctly by actually logging a user in. We'll
+log the user in w/ a temporary sessions cookie that expires
+automatically upon browser close. We'll add sessions that persist even
+after closing the browser. \\
+Implementing sessions involves defining a large number of related
+functions for use accross multiple controllers and views. Ruby
+provides a /module/ facility for packaging such functions in one
+place. Conveniently, a Sessions helper module was generated
+automatically when generating the Sessions controller. Moreover, such
+helpers are automatically included in Rails views; by including the
+module into the base class of all controllers (the Applicatioin
+controller), we arrange to make them available in our controllers as
+well. 
+#+BEGIN_SRC ruby
+./app/controllers/application_controller.rb
+class ApplicationController < ActionController::Base
+  protect_from_forgery with: :exception
+  include SessionsHelper
+end
+#+END_SRC
+
+The =log_in= method. \\
+We can treat =session= as if it were a hash, and assign to it as
+follows:
+: session[:user_id] = user.id
+This places a temporary cookie on the user's browser containing an
+encrypted version of the user's id, which allows us to retrieve the id
+on subsequent pages using =session[:user_id]=. In contrast to the
+persistent cookie created by the =cookies= method, the temporary
+cookie created by the =session= method expires immediately when the
+browser is closed. We define =log_in= in the Sessions helper. \\
+Bc temporary cookies created using the =session= method are
+automatically encrypted, the code is secure, and there is no way for
+an attacker to use the sessions initiated w/ the =session= method (not
+the case for persistent sessions created using the =cookies=
+method). Permanent cookies are vulnerable to a session /hijacking/
+attack. So ch9, we'll have to be much more careful about the
+information we place on the user's browser. \\
+With the =log_in= method defined, we're now ready to complete the
+session =create= action by logging the user in and redirecting to the
+users profile. Note: =redirect_to user= converts this to the route
+=user_url(user)=. \\
+The login form should be working, although there is no way to tell
+that you're logged in. As a first step toward enabling more visible
+changes, we'll retrieve the current user from the database using the
+id in the session. We'll change the links on the application layout,
+including a URL to the current user's profile.
+#+BEGIN_SRC ruby
+./app/helpers/session_helper.rb
+module SessionsHelper
+  # Logs in the given user.
+  def log_in(user)
+    session[:user_id] = user.id
+  end
+end
+
+./app/controller/sessions_controller.rb
+...
+  def create
+    user = User.find_by(email: params[:session][:email].downcase)
+    if user && user.authenticate(params[:session][:password])
+      log_in user
+      redirect_to user
+    else
+      flash.now[:danger] = 'Invalid email/password combination'
+      render 'now'
+    end
+  end
+#+END_SRC
+
+Current user. \\
+Having placed the user's id securely in the temporary session, we are
+now in a position to retrieve it on subsequent pages, which we'll do
+by defining a =current-user= method to find the user in the database
+corresponding to the session id. The purpose of =current_user= is to
+allow constructions such as 
+: <%= current_user.name %>
+: redirect_to current_user
+Recall: =find= raises an exception if the user id doesn't exist. This
+behavior is appropriate on the user profile page because it will only
+happen if the id is invalid, but in the present case
+=session[:user_id]= will often be =nil=. 
+
+ 
