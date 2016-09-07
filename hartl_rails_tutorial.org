@@ -2058,7 +2058,139 @@ Home page results in the flash message displayed a second time. We
 will fix this belimish next.
 
 A flash test. \\
-The incorrect flash behavior is a minor bug in our application. 
+The incorrect flash behavior is a minor bug in our application. This
+situation (according to our testing guidelines Box 3.3) is exactly the
+sort of situation where we should write a test to catch the error so
+it doesn't recur. \\
+We write a short integration test for the login form submission before
+proceeding. The benefits of this integration test are:
+- documenting the bug,
+- preventing a regression,
+- and this weill also give us a good foundation for further
+  integration tests of login and layout. 
+We start by generating an integration test for our application's login
+behavior =$ rails generate integration_test users_login=. Next, we
+need a test to capture the sequence of behavior where the bug occurs:
+1) visit the login path
+2) verify the new sessions form renders properly
+3) post to the session path with an invalid =params= hash
+4) verify that the new sessions form gets re-rendered and that a flash
+   message appears
+5) visit another page (such as the Home page)
+6) verify that the flash message /doesn't/ appear on the new page
+#+BEGIN_SRC ruby
+./test/integration/users_login_test.rb
+class UsersLoginTest < ActionDispatch::IntegrationTest
+  test "login with invalid information"
+    get login_path
+    assert_template 'sessions/new'
+    post login_path, params: { session: { email: "", password: "" } )
+    assert_template 'sessions/new'
+#+END_SRC
+
+*Logging in*. \\
+Now that our login can handle invalid submissions, the next step is to
+handle valid submissions correctly by actually loggin a user in. We
+log the user in w/ a temporary session cookie that expires
+automatically upon the browser close. We add sessions that persist
+even after closing the browser. \\
+Implementing sessions involves defining a large number of related
+functions for use accross multiple controllers and views. Recall- Ruby
+provides a /module/ facility for packaging such functions in one
+place. Conveniently, a Sessions helper module was generated
+automatically when generating the Sessions controller. Such helpers
+are automatically included in Rails views; by including the module
+into the base class of all controllers (the Application controller),
+we arrange to make them available in our controllers as well. 
+: class ApplicationController < ActionController::Base
+:   protect_from_forgery with: :exception
+:   Include SessionsHelper
+: end 
+
+The =log_in= method. \\
+Logging a user in is simple w/ the help of the =session= method
+defined by Rails (seperate and distinct from the Sessions
+controller). We can treat =session= as if it were a hash, and assign
+to it: =session[:user_id] = user.id=. This places a temporary cookies
+on the user's browser containing an encrypted version of the user's
+id, which allows us to retrieve the id on subsequent pages using 
+=session[:user_id]=. The temporary cookie created by the =session=
+method expires immediately when te browser is closed. \\
+Bc we want to use the same login technique in a couple different
+places, we'll define a method called =log_in= in the Sessions helper
+(see below). Bc temp cookies created using the =session= method are
+automatically encrypted, the code below is secure (applies only to
+temp sessions via =session= method, not w/ sessions via =cookie=
+method). Permanent cookies are vulnerable to session hijacking attacks
+(cf. ch9). \\
+
+#+BEGIN_SRC ruby
+./app/helpers/sessions_helper.rb
+module SessionsHelper
+  # Logs in the given user.
+  def log_in(user)
+    session[:user_id] = user.id
+  end
+end
+
+./app/controllers/sessions_controller.rb
+class SessionsController < ApplicationController
+  ...
+  def create
+    user = User.find_by(email: params[:session][:email].downcase)
+    if user && user.authenticate(params[:session][:password])
+      log_in user
+      redirect_to user
+    else
+      flash.now[:danger] = 'Invalid email/password combination'
+      render 'new'
+    end
+  end
+  ...
+end
+#+END_SRC
+
+
+Current user. \\
+Now that we placed the user's id securely in the temporary session, we
+are now in a position to retrieve it on subsequent pages, which we'll
+do by defining a =current_user= method to find the user in the
+database corresponding to the session id. The purpose of the
+=current_user= is to allow constructions such as
+: <%= current_user.name %>
+and
+: redirect_to current_user
+To find the current user, one possibility is to use the =find= method,
+as on the user profile page =User.find(session[:user_id])=. Recall-
+=find= raises an exception if the user id doesn't exist. This behavior
+is appropriate on the user profile page bc it will only happen if the
+id is invalid, but in the present case =session[:user_id]= will often
+be =nil= (i.e. for non-logged-in users). To handle this possiblity,
+we'll use the same =find_by= method used to find by email address in
+the =create= method, with =id= in place of =email=:
+: User.find_by(id: session[:user_id])
+Rather than raising an exception, this method returns =nil=
+(indicating no such user) if the id is invalid. This works fine, but
+it hits the database multiple times if, e.g. =current_user= appeared
+multiple times on a page. Instead, we'll follow a common Ruby
+convention by storing the result of =User.find_by= in an instance
+variable, which hits the db the first time but returns the instance
+variable immediately on subsequent invocations: 
+#+BEGIN_SRC ruby
+if @current_user.nil?
+  @current_user = User.find_by(id: session[:user_id])
+else
+  @current_user
+end
+
+... more sufficiently rewritten as
+@current_user = @current_user || User.find_by(id: seesion[:user_id])
+
+... idiomatically as
+@current_user ||= User.find_by(id: session[:user_id])
+#+END_SRC
+
+
 * TODO why do we have two alia for user#new
 One alias is GET user#new for signup, I guess after signing up you get
 that user returned back
