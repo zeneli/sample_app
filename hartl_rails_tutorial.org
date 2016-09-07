@@ -2190,6 +2190,79 @@ end
 @current_user ||= User.find_by(id: session[:user_id])
 #+END_SRC
 
+Changing the layout links. \\
+The first practical application for logging in involves changing the
+layout links based on the login status. In particular, we add links
+for logging out, links for user settings, for listing all users, and
+for the current user's profile page. \\
+At this point, I would consider writing an integration test to capture
+the behavior described above. As you become mroe familiar w/ the
+testing tools in Rails you may find yourself more inclined to write
+tests first. In this case, such a test involves several new ideas, so
+for now it's best to defer for later. \\
+The way to change links in the site layout involves using an if-else
+statement inside embedded Ruby to show one set of links if the user is
+logged in and another, otherwise (see below). We use a =logged_in?=
+boolean method, which determines if a user has logged in. \\
+Recall- a user is logged in if there is a current user in the session,
+i.e., if =current_user= is not =nil=. Checking for his requires the
+use of the 'not' operator written using an exclamation point =!= (read
+'bang'). The resulting =logged_in?= method appears below. \\
+We're now ready to change the layout links if a user is logged
+in. There are four new links (two stubbed out). Below is a concise
+version of the conditional header template.
+
+#+BEGIN_SRC ruby
+# conditional templating
+  <% if logged_in? %>
+    # Links for logged-in users
+  <% else %>
+    # Links for non-logged-in-users
+  <% end %>
+
+./app/helpers/sessions_helper
+module SessionsHelper
+  ...
+  # Return true if the user is logged in, false otherwise.
+  def logged_in?
+    !current_user.nil?
+  end
+  ...
+end
+
+./app/views/layouts/_header.html.erb
+<header class="navbar navbar-fixed-top navbar-inverse">
+<div class="container">
+  <nav>
+    <ul class="nav navbar-nav navbar-right">
+      <li><%= link_to "Home", root_path %></li>
+      <li><%= link_to "Help", help_path %></li>
+      <% if logged_in? %>
+        <li><%= link_to "User", '#' %></li>
+        <li class="dropdown-menu">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            Accoutn
+          </a>
+          <ul class="dropdown-menu">
+            <li><%= link_to "Profile", current_user %></li>
+            <li><%= link_to "Settings", '#' %></li>
+            <li><%= link_to "Log out", logout_path, method: delete %></li>
+          </ul>
+        </li>
+      <% else %>
+        <li><%= link_to "Log in", login_path %></li>
+      <% end %>
+    </ul>
+  </nav>
+</div>
+</header>
+
+./app/assets/javascript/application.js
+//= require jquery
+...
+//= require bootstrap
+...
+#+END_SRC
 
 * TODO why do we have two alia for user#new
 One alias is GET user#new for signup, I guess after signing up you get
