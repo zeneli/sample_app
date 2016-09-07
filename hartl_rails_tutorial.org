@@ -2383,8 +2383,66 @@ To test the behavior, we can add a line to the test to check that the
 user is logged in. It's helpful in this context to define an
 =is_logged_in?= helper method to parallel the =logged_in?= helper
 defined which returns =true= if there's a user id in the (test)
-seesion and false otherwise. \\
+seesion and false otherwise. With the helper method, we can assert
+that the user is logged in after signup by appending =assert
+is_logged_in?= at the end of the =valid signup information= test. 
+
+*Logging out*. \\
+Our authentication model is to keep users logged in until they log out
+explicitly. We add the necessary logout capability. Bc the "Log out"
+link has already been defined, all we need is to write a valid
+controller action to destroy user sessions. \\
+So far, the Sessions controller actions have followed the RESTful
+convention of using =new= for a login page and =create= to complete
+the login. We'll continue this theme by using a =destroy= action to
+delete sessions, i.e., to log out. Unlike the login functionality,
+we'll only be logging out in one place, so we'll put the relevant code
+directly in the =destroy= action. Wth a little refactoring, we will
+also make the authentication machinery easier to test. \\
+Logging out involves undoing the effects of the =log_in= method from
+which involves deleting the user id from the ession. To do this, we
+wuse the =delete= method as follows: =session.delete(:user_id)=. We
+also set the current user to =nil=, although in the present case this
+won't matter bc of an immediate redirect to the root URL. As with 
+=log-in= and associated methods, we'll put the resulting =log_out=
+method in the Sessions helper module (see below). \\
+To test the logout machinery, we can add some steps to the user login
+test. After logging in, we use =delete= to issue a =DELETE= request to
+the logout path and verify the user is logged out and redirected to
+the root URL. 
 #+BEGIN_SRC ruby
+./app/helpers/session_helper.rb
+module SessionsHelper
+  # Logs in the given user.
+  def login(user)
+    session[:user_id] = user.id
+  end
+  ...
+  # Logs out the current user.
+  def log_out
+    session.delete(:user_id)
+    @current_user = nil
+  end
+end
+
+./test/integration/users_login_test.rb
+require 'test_helper'
+class UsersLoginTest < ActionDispatch::IntegrationTest
+  ...
+  test "login with valid information followed by logout" do
+    get login_path
+    ...
+    assert is_logged_in?
+    ...
+    delete logout_path
+    assert_not is_logged_in?
+    assert_redirect_to root_url
+    follow_redirect!
+    assert_select "a[href=?]", login_path
+    assert_select "a[href=?]", logout_path,      count: 0
+    assert_select "a[href=?]", user_path(@user), count: 0
+  end
+end
 #+END_SRC
 * TODO why do we have two alia for user#new
 One alias is GET user#new for signup, I guess after signing up you get
