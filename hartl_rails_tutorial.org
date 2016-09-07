@@ -2210,8 +2210,12 @@ use of the 'not' operator written using an exclamation point =!= (read
 'bang'). The resulting =logged_in?= method appears below. \\
 We're now ready to change the layout links if a user is logged
 in. There are four new links (two stubbed out). Below is a concise
-version of the conditional header template.
-
+version of the conditional header template. \\
+We need to include Bootstrap's ability to make dropdown menus (see
+below). Not in particular the inclusion of the special Bootstrap CSS
+classes such as =dropdown=, =dropdown-menu=, etc. To activate the
+dropdown menu, we need to include Bootstrap's custom JavaScript
+library in the Rails asset pipeline's =application.js= file. \\
 #+BEGIN_SRC ruby
 # conditional templating
   <% if logged_in? %>
@@ -2264,6 +2268,108 @@ end
 ...
 #+END_SRC
 
+Testing layout changes. \\
+Having verified by hand that the app is behaving properly upon
+successful login, before moving on we'll write an integration test to
+capture that behavior and catch regressions. \\
+We build on the test the login integration test and write a series of
+steps to verify the following sequence of actions:
+1) visit the login path
+2) post valid information to the sessions path
+3) verify that the login link disappears
+4) verify that a logout link appears
+5) verify that a profile link appears
+In order to see these changes, our test needs to log in as a previously
+registered user, which means that such a user must already exist in
+the database. The default Rails way to do this is to use /fixtures/,
+which are a way of organizing data to be loaded into the test
+database (which we deleted so our email uniqueness tests would
+pass). Now we're ready to start filling in the empty file w/ custom
+fixtures of our own. \\
+In the present case, we need only one user, whose information should
+consist of a valid name and email address. Bc we'll need to log the
+user in, we also have to include a valid password to compare w/ the
+password submitted to the Sessions controller's =create=
+action. Referring to the data model, we see that this means creating a
+=password_digest= attribute for the user fixture, which we accomplish
+by defining a =digest= method of our own. \\
+Te password digest is created using bcrypt (via
+=has_secure_password=), so we'll need to create the fixture password
+using hte same method. By inspecting the secure password source code,
+we find the metod is =BCrypt::Password.create(string, cost: cost)=
+where =string= is the string to be hashed and =cost= is the /cost/
+parameter that determines the computational cost to calculate the
+hash. Using a high cost makes it computationally intractable to use
+the hash to determine the original password, which is an important
+security precaution in a production environment, but in tests we want
+the =digest= metod to be as fast as possible. The secure password
+source code has a line for this as well:
+: cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST : BCrypt::Engine.cost
+There are several places we could put the resulting =digest= method,
+but we'll have an opportunity to reuse =digest= in the User mode. This
+suggest placing the method in =user.rb=. Bc we won't necessarily have
+access to a user object when calculating the digest (as will be the
+case in the fixutres file), we'll attach the digest method to the User
+class itself, which makes it a class method. \\
+Below, we define the =Foo= user fixture. Note, fixtures support
+embedded Ruby, which allows us to use the User class method
+=User.digest= to create a valid password digest for the test
+user. Although, we've defined the =password_digest= attributes
+required by =has_secure_password=, sometimes it's convenient to refer
+to the plain (virtual) password as well. This is impossible to arrange
+w/ fixtures, and adding a =password= attribute cuases Rails to
+complain that there is no such column in the db (true). We'll make do
+by adopting the convention that ll fixture users have the same
+password =password=. \\
+Having created a fixture w/ a valid user, we can retrieve it inside a
+test as follows:
+: user = users(:foo)
+Here =users= corresponds to the fixture filename =user.yml=, while the
+symbol =:foo= references user w/ the key shown. With the fixture user
+as above, we can now write a test for the layout links by converting
+the sequence enumerated at the beginning of this section into code
+(see below). \\
+We've used the =assert_redirected_to @user= to check the right
+redirect target and followed the target by use of
+=follow_redirect!=. We also verified the login link dsappears by
+verifying there are /zero/ login paths on the redirected page. 
+#+BEGIN_SRC ruby
+./app/models/user.rb
+class User < ApplicationRecord
+  ...
+  # Returns the hash digest of the given string.
+  def User.digest(string)
+    cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
+                                                  BCrypt::Engine.cost
+    BCrypt::Password.create(string, cost: cost)
+  end
+end
+
+./test/fixtures/user.yml
+foo:
+  name: Foo Example
+  email: foo@bar.baz
+  password_digest: <%= User.digest('password') %>
+
+./test/integration/users_login_test.rb
+require 'test_helper'
+class UsersLoginTest < ActionDispatch::IntegrationTest
+  def setup
+    @user = users(:foo)
+  end
+  ...
+  test "login with valid information" do
+    get login_path
+    post login_path, params: { session: { email: @user.email,
+                                          password: 'password' } }
+    assert_redirected_to @user
+    follow_redirect!
+    assert_template 'users/show'
+    assert_select "a[href=?", login_path, count: 0
+    ...
+  end
+end
+#+END_SRC
 * TODO why do we have two alia for user#new
 One alias is GET user#new for signup, I guess after signing up you get
 that user returned back
