@@ -2370,6 +2370,22 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
   end
 end
 #+END_SRC
+
+Login upon signup. \\
+Newly registered users are not logged in by default. We log in new
+users automatically as part of the signup process. To arrange this
+behavior, all we need to do is add a call to =log_in= in the Users
+controller =create= action (see below). \\
+To arrange this behavior, all we need to do is add a call to the
+=log_in= in the Users controller =create= action (right after we save
+the newly created user). \\
+To test the behavior, we can add a line to the test to check that the
+user is logged in. It's helpful in this context to define an
+=is_logged_in?= helper method to parallel the =logged_in?= helper
+defined which returns =true= if there's a user id in the (test)
+seesion and false otherwise. \\
+#+BEGIN_SRC ruby
+#+END_SRC
 * TODO why do we have two alia for user#new
 One alias is GET user#new for signup, I guess after signing up you get
 that user returned back
