@@ -2473,3 +2473,73 @@ and pagination. \\
 Finally, we'll add the ability to destroy users, wiping them clear
 from the databse We create a privileged class of administrative users
 authorized to delete other users. 
+** Updating users
+The pattern for editing user information closely parallels that for
+creating new users (see ch7). 
+- creating new users
+  - =new= action renders a view for a new users
+  - =create= action responds to a =POST=
+  - anyone can sign up
+- editing users
+  - =edit= action renders a view to edit users
+  - =update= action responds to a =PATCH=
+  - only the current user can update their information
+The authentication machinery from ch8 enables the use of a /before
+filter/ to ensure that this is the case.
+
+*Edit form*. \\
+We begin w/ the edit form which consists of name, email, and
+password/password confirmation fields to update the user profile. An
+edit working page = fill User controler =edit= action + user edit
+view. The =edit= action requires pulling the relevant user out of the
+database. The URL for a user's edit page is =/users/1/edit= (assuming
+the user's id is =1=). \\
+The corresponding edit view (see below) closely resembles the new user
+view. Te use of
+ : target="_blank"
+in the Gravatar link is a neat trick to get the browser to open the
+page in a new window or tab, which is sometimes convenient behavior
+when linking to third-party sites. There is a minor security issue
+associated w/ it; dealing w/ the details is covered below. \\
+W/ the =@user= instance variable, the edit page should render properly
+the 'Name' and 'Email' fields w/ the corresponding =@user=
+attributes. 
+#+BEGIN_SRC ruby
+./app/controller/users_controller.rb
+class UsersController < ApplicationController
+  ...
+  def edit
+    @user = User.find(params[:id])
+  end
+  ...
+end
+
+./app/views/users/edit.html.erb
+<%= provide(:title, "Edit user") %>
+<h1>Update your profile</h1>
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <%= form_for(@user) do |f| %>
+      <%= render 'shared/error_message' %>
+
+      <%= f.label :name %>
+      <%= f.text_field :name, class: 'form-control' %>
+
+      <%= f.label :email %>
+      <%= f.email_field :email, class: 'form-control' %>
+
+      <%= f.label :password %>
+      <%= f.password_field :password, class: 'form-control' %>
+
+      <%= f.label :password_confirmation %>
+      <%= f.password_field :password_confirmation, class: 'form-control' %>
+      
+      <%= f.submit "Save changes", class: "btn btn-primary" %>
+    <% end %>
+  <div class="gravatar_edit">
+    <%= gravatar_for @user %>
+    <a href="..." target="_blank">change</a>
+  </div>
+</div>
+</div>
+#+END_SRC
