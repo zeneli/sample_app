@@ -2575,3 +2575,45 @@ $ rails console
 >> User.first.new_record?
 => false
 #+END_SRC
+
+*Unsuccessful edits*. \\
+We start by creating an =update= action, which uses
+=update_attributes= to update the user based on the submitted =params=
+hash. With invalid information, the update attempt returns =false=, so
+the =else= branch renders the edit page. We've seen this pattern
+before; the structure parallels the first version of the =create=
+action (see below). \\
+#+BEGIN_SRC ruby
+./app/controllers/users_controller.rb 
+class UsersController < ApplicationController
+  ...
+  def update
+    @user = User.find(params[:id])
+    if @user.update_attributes(user_params)
+      # Handle a successful update.
+    else
+      render 'edit'
+  end
+#+END_SRC
+
+*Testing unsuccessful edits*. \\
+Following the testing guidelines, we write an integration test to
+catch any regressions. First we write a simple test of an unsuccessful
+edit. 
+#+BEGIN_SRC ruby
+class UsersEditTest < ActionDispatch::IntegrationTest
+  def setp
+    @user = users(:foo)
+  end
+
+  test "unsuccessful edit" do
+    get edit_user_path(@user)
+    assert_template 'users/edit'
+    patch user_path(@user), params: { user: { name:  "",
+                                              email: "foo@invalid",
+                                              password:             "foo",
+                                              password_confirmation:"bar" } }
+    assert_template 'users/edit'
+  end
+end
+#+END_SRC
