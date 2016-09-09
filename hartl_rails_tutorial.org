@@ -2409,7 +2409,8 @@ method in the Sessions helper module (see below). \\
 To test the logout machinery, we can add some steps to the user login
 test. After logging in, we use =delete= to issue a =DELETE= request to
 the logout path and verify the user is logged out and redirected to
-the root URL. 
+the root URL (see below). We also check the login link reappears and
+that the logout and profile links disappear. 
 #+BEGIN_SRC ruby
 ./app/helpers/session_helper.rb
 module SessionsHelper
@@ -2444,208 +2445,31 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
   end
 end
 #+END_SRC
-* TODO why do we have two alia for user#new
-One alias is GET user#new for signup, I guess after signing up you get
-that user returned back
-The other is 
 
-Login form. \\
-Having defined the relevant controller and route, now we'll fill in
-the view for new sessions, i.e., the login form. The login view is
-similar to the signup form, except with two less fields. When the
-login information is invlaid, we want to re-render the login page with
-a flash message displaying the error message. We have already defined
-an error-messages partial to display error-messages, but those
-messages are provided automatically by Active Record. This won't work
-for sessions creation errors bc the session isn't an Active Record
-object, so we'll render the error as a flash mesage instead. \\
-Recall, the signup form uses the =form_for= helper, taking a =@user=
-argument. The main difference between the session form and signup form
-is that we have no Session model (hence no analogue for the =@user=
-variable). In constructing a new session form, we have to give
-=form_for= slightly more information (as opposed to =form_for(@user)=
-which allows Rails to infer that the =action= of the form should be
-to POST to the URL =/users=). We need to indicate the name of the
-resource corresponding to the URL: =form_for(:session,
-url:login_path)=. 
-
-Finding and authenticating a user. \\
-First we handle invalid input in the case of creating sessions,
-i.e. /login/ (just as we did for creating users in /login/).
-- we review what happens when a form gets submitted
-- we arrange for helpful error messages to appear in the case of login
-  failure
-- we lay the foundation for successful login by evaluating each login
-  based on validity of email/password combination
-Lets begin by defining the =create= action of the Sessions controller
-(along w/ =new= and =destroy= actions). The =create= action does
-nothing but render the =new= view equivalent to =/sessions/new=. So we
-place
-: render 'new'
-in the =create= action of SessionsController.rb. Inspecting the debug
-infromation after a submission results in a =params= hash containing
-the email and password under the key =session=. \\
-Inside the =create= action the =params= hash has all the information
-needed to authenticate users by email and password:
-- =User.find_by= method provided by Active Record, and
-- =authenticate= method provided by =has_secure_password=.
-Our strategy for user login can be summarized (as shown below):
-1) pull the user out of the database using submitted email (downcased)
-2) if the resulting user is not =nil= or =false= and is valid, then
-   execute the Log in code
-#+BEGIN_SRC ruby
-# debug dump
----
-session:
-  email: 'user@example.com'
-  password: 'foobar'
-commit: Log in
-action: create
-controller: sessions
-
-params: { session: { password: "foobar", email: "user@example.com" } }
-params[:session][:email] == "user@example.com"
-params[:session][:password] == "foobar"
-
-app/controllers/sessions_controller.rb
-...
-def create
-  user = User.find_by(email: params[:session][:email].downcase)
-  if user && user.authenticate(params[:session][:password])
-    # Log the user in and redirect to the user's show page.
-  else
-    # Create an error message.
-    render 'new'
-  end
-end
-...
-#+END_SRC
-
-Rendering with a flash message. \\
-Recall that we displayed signup errors using the User model error
-messages. These errors are associated w/ a particular Active Record
-object, but this strategy won't work here bc the session isn't an
-Active Record model. Instead, we'll put a message in the flash to be
-displayed upon failed login. \\
-Bc of the flash message display in the site layout, the
-=flash[:danger]= message automatically gets displayed. The page looks
-fine, but the contents of the flash persist for one request longer. \\
-
-
-#+BEGIN_SRC ruby
-
-
-app/controllers/sessions_controller.rb
-...
-def create
-  user = User.find_by(email: params[:session][:email].downcase)
-  if user && user.authenticate(params[:session][:password])
-    # Log the user in and redirect to the user's show page.
-  else
-    # Create an error message.
-    flash[:danger] = "invalid email/password combination' # not right
-    render 'new'
-  end
-end
-...
-#+END_SRC
-
-A flash test. \\
-The incorrect flash behavior has a minor bug in our app. We'll thus
-write a test to catch the error so that it doesn't recur. We'll thus
-write a short integration test for the login form submission before
-proceeding. In addition to documenting the bug and preventing a
-regression, this will also give us a good founddation for further
-integration tests of login and logout. \\
-The way to get the failing test to pass is to replace =flash= w/
-=flash.now= (designed for displaying flash messages on rendered
-pages). The contents of =flash.now= disappear as soon as there is
-an addtional request (exactly the behavior our
-=test/integration/users_login_test.rb= expect).
-
-*Logging in*. \\
-Now that our login can handle invalid submissions, the next step is to
-handle valid submissions correctly by actually logging a user in. We'll
-log the user in w/ a temporary sessions cookie that expires
-automatically upon browser close. We'll add sessions that persist even
-after closing the browser. \\
-Implementing sessions involves defining a large number of related
-functions for use accross multiple controllers and views. Ruby
-provides a /module/ facility for packaging such functions in one
-place. Conveniently, a Sessions helper module was generated
-automatically when generating the Sessions controller. Moreover, such
-helpers are automatically included in Rails views; by including the
-module into the base class of all controllers (the Applicatioin
-controller), we arrange to make them available in our controllers as
-well. 
-#+BEGIN_SRC ruby
-./app/controllers/application_controller.rb
-class ApplicationController < ActionController::Base
-  protect_from_forgery with: :exception
-  include SessionsHelper
-end
-#+END_SRC
-
-The =log_in= method. \\
-We can treat =session= as if it were a hash, and assign to it as
-follows:
-: session[:user_id] = user.id
-This places a temporary cookie on the user's browser containing an
-encrypted version of the user's id, which allows us to retrieve the id
-on subsequent pages using =session[:user_id]=. In contrast to the
-persistent cookie created by the =cookies= method, the temporary
-cookie created by the =session= method expires immediately when the
-browser is closed. We define =log_in= in the Sessions helper. \\
-Bc temporary cookies created using the =session= method are
-automatically encrypted, the code is secure, and there is no way for
-an attacker to use the sessions initiated w/ the =session= method (not
-the case for persistent sessions created using the =cookies=
-method). Permanent cookies are vulnerable to a session /hijacking/
-attack. So ch9, we'll have to be much more careful about the
-information we place on the user's browser. \\
-With the =log_in= method defined, we're now ready to complete the
-session =create= action by logging the user in and redirecting to the
-users profile. Note: =redirect_to user= converts this to the route
-=user_url(user)=. \\
-The login form should be working, although there is no way to tell
-that you're logged in. As a first step toward enabling more visible
-changes, we'll retrieve the current user from the database using the
-id in the session. We'll change the links on the application layout,
-including a URL to the current user's profile.
-#+BEGIN_SRC ruby
-./app/helpers/session_helper.rb
-module SessionsHelper
-  # Logs in the given user.
-  def log_in(user)
-    session[:user_id] = user.id
-  end
-end
-
-./app/controller/sessions_controller.rb
-...
-  def create
-    user = User.find_by(email: params[:session][:email].downcase)
-    if user && user.authenticate(params[:session][:password])
-      log_in user
-      redirect_to user
-    else
-      flash.now[:danger] = 'Invalid email/password combination'
-      render 'now'
-    end
-  end
-#+END_SRC
-
-Current user. \\
-Having placed the user's id securely in the temporary session, we are
-now in a position to retrieve it on subsequent pages, which we'll do
-by defining a =current-user= method to find the user in the database
-corresponding to the session id. The purpose of =current_user= is to
-allow constructions such as 
-: <%= current_user.name %>
-: redirect_to current_user
-Recall: =find= raises an exception if the user id doesn't exist. This
-behavior is appropriate on the user profile page because it will only
-happen if the id is invalid, but in the present case
-=session[:user_id]= will often be =nil=. 
-
- 
+*Conclusion*. \\
+What we learned in this chapter:
+- Rails can maintain state from one page to the next using temporary
+  cookies via the session method. 
+- The login form is designed to create a new session to log a user
+  in.
+- The flash.now method is used for flash messages on rendered pages.
+- Test-driven development is useful when debugging by reproducing the
+  bug in a test. 
+- Using the session method, we can securely place a user id on the
+  browser to create a temporary session. 
+- We can change features such as links on the layouts based on login
+  status. 
+- Integration tests can verify correct routes, database updates, and
+  proper changes to the layout.  
+* Updating, showing, and deleting users
+We complete the REST actions for the Users resource by adding =edit=,
+=update=, =index=, and =destroy= actions. We'll start by giving users
+the ability to update their profiles, which will also provide a
+natural opportunity to enforce an authorization model (made possibly
+by the authentication code in ch8). \\
+Then we'll make a listing of all users (also requiring
+authentication), which will motivate the introduction of sample data
+and pagination. \\
+Finally, we'll add the ability to destroy users, wiping them clear
+from the databse We create a privileged class of administrative users
+authorized to delete other users. 
