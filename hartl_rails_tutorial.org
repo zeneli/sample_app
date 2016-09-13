@@ -1,4 +1,22 @@
 #+STARTUP: indent
+* Software Design Process
+Phases:
+- Problem Description
+- Current Existing Solutions 
+  - description of ineffectiveness of current solution
+`  - Rationale Description 
+- Mission Statement
+- BDD
+  - SMART Stories
+  - Story Boards / Scenarios
+- *Lo FI UI*
+- Hypothesis
+
+Software Company.
+- RYAN Client- paper pencil. Doesnt know what a req is.
+- ERV Meidator- create req 
+- LUPO Software Officer- translate req
+- Software Devs- write acceptance tests of req. And code. 
 * beginning
 *Version control with Git*. \\
 Undoing things a la Git. \\
@@ -2599,7 +2617,8 @@ class UsersController < ApplicationController
 *Testing unsuccessful edits*. \\
 Following the testing guidelines, we write an integration test to
 catch any regressions. First we write a simple test of an unsuccessful
-edit. 
+edit. Note the patch method to issue a =PATCH= request, which follows
+the same pattern as =get=, =post=, and =delete=.
 #+BEGIN_SRC ruby
 class UsersEditTest < ActionDispatch::IntegrationTest
   def setp
@@ -2616,4 +2635,36 @@ class UsersEditTest < ActionDispatch::IntegrationTest
     assert_template 'users/edit'
   end
 end
+#+END_SRC
+
+*Successful edits (w/ TDD)*. \\
+We get the edit form to work. Editing the profile images is already
+functional since we've outsourced images upload to the Gravatar
+website; we can edit Gravatars by clicking the 'change' link. Let's
+get the rest of the user edit functionality working. \\
+As we get more comfortable w/ testing, you might find that it's useful
+to write integration tests before writing the app code instead of
+after. In this context, such tests are sometimes known as /acceptance
+tests/, since they determine when a particular feature should be
+acceptable as complete. To see how this works, we'll complete the user
+edit feature using test-driven development. \\
+We'll test for the correct behavior of updating users w/ the following
+behavior in mind:
+- we submit valid information
+- we check for a nonempty flash message and a successful redirect to
+  the profile page
+- while also verifying that the user's information correctly changed
+  in the database
+Note- the password and confirmation are black, which is convenient for
+users who don't want to update their passwords every time they update
+their names or email addresses. Note also the use of =@user.reload= to
+reload the user's values from the database and confirm that they were
+successfully updated. 
+#+BEGIN_SRC ruby
+./test/integration/users_edit.rb
+class UserEditTest < ActionDispatch::IntegrationTest
+  ...
+  test "successful edit" do
+    get edit_user_path(@user)
+    assert_template 
 #+END_SRC
