@@ -2740,3 +2740,28 @@ class UsersController < ActionDispatch::IntegrationTest
   end
 end
 #+END_SRC
+
+Requiring the right user. \\
+We've managed to only allow registered users to log in. Public users
+no longer have access to edit nor update currently registered
+users. But even logged in usres should only be allowed to edit their
+own information. \\
+As we saw it's easy to have a test suite that misses an essential
+security flaw, so we proceed using test-driven development to be sure
+our code implements the security model correctly. To do this, we'll
+add tests to the Users controller test to complement the ones shown
+below. \\
+To ensure usres cannot edit other users' information, we need to be
+able to log in as a second user. This means adding a second user to our
+users fixture (add user =bar=). By using the =log_in_as= method, we
+can test the =edit= and =update= actions. Note that we expect to
+redirect users to the root path instead of the login path bc a user
+trying to edit a different user would already be logged in. \\
+To redirect users trying to edit another user's profile, we'll add a
+second method called =correct_user=, together w/ a before filter
+to call it. Note that the =current_user= defines the =@user=
+variable, which shows that we can eliminate the =@user= assignment in
+the =edit= and =update= actions. 
+#+BEGIN_SRC ruby
+
+#+END_SRC
