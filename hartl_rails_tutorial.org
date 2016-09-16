@@ -2689,7 +2689,20 @@ define the =logged_in_user= method and invoke it using
 =before_action :logged_in_user=. \\
 By default, before filters apply to /every/ action in a controller, so
 here we restrict the filter to act only on =:edit= and =:update=
-action by passing the appropriate =only:= option hash. 
+action by passing the appropriate =only:= option hash. \\
+If we remove our security model, that is the before filter call to
+=logged_in_user=, our test suite is still GREEN (comment out the
+before hook and the controller '... when not logged in' tests). Of all
+the regressions we'd like our test suite to catch, a massive security
+hole like this is #1. So the code w/out the our security model should
+definitely be RED. \\
+Bc the before filter operates on a per-action basis, we'll put the
+corresponding tests in the Users controller test. The plan is to hit
+the =edit= and =update= actions w/ the right kinds of requests and
+verify that the flash is set and the user is redirected to the login
+path. Notice the second test involves using the =patch= method to send
+a =PATCH= request to =user_path(@user)= (which is then routed to the
+=update= action in the Users controller).
 #+BEGIN_SRC ruby
 ./app/controllers/users_controller.rb
 class UsersController < ApplicationController
@@ -2706,5 +2719,24 @@ class UsersController < ApplicationController
         redirect_to login_url
       end
     end
+end
+
+./test/controllers/users_controller_test.rb
+class UsersController < ActionDispatch::IntegrationTest
+  def setup
+    @user = user(foo)
+  end
+  ...
+  test "should redirect edit when not logged in" do
+    get edit_user_path(@user)
+    assert_not flash.empty?
+    assert_redirected_to login_url
+  end
+  test "should redirect update when not logged in" do
+    patch user_path(@user), params: { user: { name: @user.name,
+                                              email: @user.email } }
+    assert_not flash.empty?
+    assert_redirected_to login_url
+  end
 end
 #+END_SRC

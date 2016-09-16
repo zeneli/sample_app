@@ -1,11 +1,15 @@
 class UsersController < ApplicationController
-  before_action :logged_in_user, only: [:edit, :update]
+  # Ex: 10.2.1 #1) uncomment the only hash
+  before_action :logged_in_user #, only: [:edit, :update]
+
   def show
     @user = User.find(params[:id])
   end
+
   def new
     @user = User.new
   end
+
   def create
     @user = User.new(user_params)
     if @user.save
