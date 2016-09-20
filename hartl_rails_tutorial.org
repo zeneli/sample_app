@@ -2828,3 +2828,12 @@ class UsersController < ApplicationController
     end
 end
 #+END_SRC
+
+*Friendly Forwarding*. \\
+Blemish: when users try to access a protected page, they are currently
+redirected to their profile page regardless of where they where trying
+to go. 
+So if a non-logged-in user tries to visit the edit page, after logging
+in the user will be redirected to /users/1 instead of
+/users/1/edit. It would be much friendlier to redirect them to their
+intended destination instead. \\
