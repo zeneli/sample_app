@@ -2668,7 +2668,7 @@ class UserEditTest < ActionDispatch::IntegrationTest
     get edit_user_path(@user)
     assert_template 
 #+END_SR
-** Authorization
+** [[https://www.railstutorial.org/book/updating_and_deleting_users#sec-authorization][Authorization]]
 Authentication allows us to identify users of our site. While
 authorization allows us lets us control what they can do. \\
 We're now in a position to implement authorization. Although the edit
@@ -2753,7 +2753,7 @@ add tests to the Users controller test to complement the ones shown
 below. \\
 To ensure usres cannot edit other users' information, we need to be
 able to log in as a second user. This means adding a second user to our
-users fixture (add user =bar=). By using the =log_in_as= method, we
+users fixture (that is add user =bar=). By using the =log_in_as= method, we
 can test the =edit= and =update= actions. Note that we expect to
 redirect users to the root path instead of the login path bc a user
 trying to edit a different user would already be logged in. \\
@@ -2761,7 +2761,70 @@ To redirect users trying to edit another user's profile, we'll add a
 second method called =correct_user=, together w/ a before filter
 to call it. Note that the =current_user= defines the =@user=
 variable, which shows that we can eliminate the =@user= assignment in
-the =edit= and =update= actions. 
+the =edit= and =update= actions. \\
+As some final refactoring: we adopt a common convention and define a
+=current_user?= boolean method for use in the =correct_user= before
+filter (defined in the Sessions helper). We use this method to replace
+code like:
+ : unless @user == current_user
+w/ the (slightly) more expressive
+ : unless current_user?(@user)
 #+BEGIN_SRC ruby
+test/controllers/user_controller.rb
+class UsersControllerTest < ActionDispatch::IntegrationTest
+  def setup
+    @user        = users(:foo)
+    @other_user  = users(:bar)
+  end
+  ...
+  test "should redirect edit when logged in as wrong user" do
+    log_in_as(@other_user)
+    get edit_user_path(@user)
+    assert flash.empty?
+    assert_redirected_to root_url
+  end
+  test "should redirect update when logged in as wrong user" do
+    log_in_as(@other_user)
+    patch user_path(@user), params: { user: { name: @user.name, 
+                                              email: @user.email } }
+    assert flash.empty? 
+    assert_redirected_to root_url
+  end
 
+app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  before_action :correct_user, only: [:edit, :update]
+  ...
+  private
+    ...
+    # Confirm the correct user
+    def correct_user
+      @user = User.find(params[:id])
+      redirect_to(root_url) unless @user == current_user
+    end
+end
+
+app/helpers/sessions_helper.rb
+module SessionsHelper
+  ...
+  # Returns the user corresponding to the remember token cookie
+  def current_user
+    ...
+  # Returns true if the given user is the current user.
+  def current_user?(user)
+    user == current_user
+  end
+end
+
+app/controllers/users_controller.rb
+class UsersController < ApplicationController
+  ...
+  private
+    ...
+    # Confirms the correct user.
+    def correct_user
+      @user = User.find(params[:id])
+      redirect_to(root_url) unless current_user(@user)
+    end
+end
 #+END_SRC
