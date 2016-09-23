@@ -3,11 +3,13 @@ foo:
   name: Foo bar
   email: foo@bar.baz
   password_digest: <%= User.digest('password') %>
+  admin: true
 
 bar:
   name: Bar Baz
   email: bar@baz.foo
   password_digest: <%= User.digest('password') %>
+  admin: false
 
 archer:
   name: Sterling Archer
