@@ -20,6 +20,13 @@ gem 'coffee-rails', '~> 4.2'
 # See https://github.com/rails/execjs#readme for more supported runtimes
 # gem 'therubyracer', platforms: :ruby
 
+# faker allows us to make sample users 
+gem 'faker'
+# will_paginate is one of the simplest and robust pagination gems
+gem 'will_paginate'
+# configures will_paginate to use the bootsrap's pagination styles
+gem 'bootstrap-will_paginate'
+
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
