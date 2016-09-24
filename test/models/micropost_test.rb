@@ -10,6 +10,7 @@ class MicropostTest < ActiveSupport::TestCase
     assert @micropost.valid?
   end
   test "usser id should be present" do
+    # passes regardless bc of idiomatically incorrect micropost initialization
     @micropost.user_id = nil
     assert_not @micropost.valid?
   end
