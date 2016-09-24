@@ -2837,3 +2837,19 @@ So if a non-logged-in user tries to visit the edit page, after logging
 in the user will be redirected to /users/1 instead of
 /users/1/edit. It would be much friendlier to redirect them to their
 intended destination instead. \\
+* User Microposts
+In th course of developing the core sample app, we've encountered four
+resources--users, session, account activations, and password
+resets--but only the first of these is backed by an Active Record
+model w/ a table in the database. \\
+We add a second such resource: user microposts, which are short
+messages associated w/ a particular user. We will make a full strength
+version of the sketch from section 2.3 by constructing a Micropost
+data model, associating it w/ the User model using the =has_many= and
+=belongs_to= methods, and then making the forms and partials needed to
+manipulate and display the results (including uploaded images). In
+ch14, we'll complete our tiny Twitter clone by adding the notion of
+following usres in order to receive a feed of their microposts. \\
+
+** A Micropost model
+*The basic model*. \\
