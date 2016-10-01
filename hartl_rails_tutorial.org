@@ -1409,7 +1409,7 @@ lower-case addresses using a =before_save= callback in the =User= model.
 At this point, the Alice scenario above will work fine. 
 
 *Adding a secure password*. \\
-Method: require each user to have a password (w/ password
+Method: require each user to have a password (with password
 confirmation), then store a /hashed/ version in the database. We add a
 way to /authenticate/ a user based on a given password (cf. ch8) to
 allow users to log in to the site.  Here a /hash/ refers to the result
@@ -1446,7 +1446,7 @@ running the tests, we see RED on the tests that assert validity of the
 since the model remains invalid but now for the wrong reasons (like test
 "name should be present"). =has_secure_password= enforces validation
 on the virtual =password= and =password_confirmation= attributes, but
-the tests create a =@user= variable w/out these attributes. \\
+the tests create a =@user= variable without these attributes. \\
 Resulting =test/models/user_test.rb= is:
 :  def setup   # create a valid user
 :    @user = User.new(name: "Example User", email: "user@example.com",
@@ -1471,16 +1471,16 @@ Since users can't sign up through the web (goal in ch7), we use the
 =create= method.
 
 *Conclusion*. \\
-Starting from scratch, we have a User model w/ name, email, and
-password attributes w/ enforcing validations). We have the ability to
+Starting from scratch, we have a User model with name, email, and
+password attributes with enforcing validations). We have the ability to
 securely authenicate users using a given password (all in twelve lines
 of code). \\
-In ch7, we make a working signup form to create new users w/ a page
+In ch7, we make a working signup form to create new users with a page
 displaying each users information. 
 
 What we learned in this chapter. \\
 - migrations allow us to modify our application's data model
-- active record comes w/ a large number of methods for creating and
+- active record comes with a large number of methods for creating and
   manipulating data models
 - active record validations allow us to place constraints on the data
   in our models
@@ -1496,8 +1496,8 @@ User sign up worflow:
 - user submits html form with singup information (cf 7.2)
 - app creates a new user and saves its attributes to the database
   (cf. 7.4)
-- the app renders a profile page w/ the newly created user information
-We begin w/ a page /showing/ users (as a first step towards our REST
+- the app renders a profile page with the newly created user information
+We begin with a page /showing/ users (as a first step towards our REST
 architecture for users). \\
 We rely on the User model validations to increase the odds of new
 users having valid emails. In ch11, we'll make sure of email validity
@@ -1518,7 +1518,7 @@ information using the =debug= method and =param= variable in
  : <%= debug(params) if Rails.env.development? %>
 
 Rails environments. \\
-Rails comes equipped w/ three environments: =test=, =development=, and
+Rails comes equipped with three environments: =test=, =development=, and
 =production=. The default environment for the Rails console is
 =development=. In the Rails console, =Rails.env= notifies us of the
 current environment. To run a console in a different environment (to
@@ -1609,7 +1609,7 @@ end
 #+END_SRC
 We add a user sidebar using the =aside= tag with bootstrap styling
 (viz. =row= and =col-md-4= classes). With the html elements and css
-classes in place, we can style the profile page w/ scss inside the
+classes in place, we can style the profile page with scss inside the
 =app/assets/stylesheets/custom.scss=. 
 
 *Singup form*. \\
@@ -1645,8 +1645,8 @@ Signup form. \\
 : <%= form_for(@user) do |f| %>
 : ...
 : <% end %>
-The =form_for= take a block w/ one variable (viz. =|f|= for
-"form"). When the =f= object is called w/ a method corresponding to an
+The =form_for= take a block with one variable (viz. =|f|= for
+"form"). When the =f= object is called with a method corresponding to an
 html form element, =f= returns code for that element specifically
 design to set an attribute of the =@user= object.
 So =f.label= & =f.text_field= create the html needed to make a labeled
@@ -1662,7 +1662,7 @@ values. \\
 Rails creates the =form= tag using the =@user= object: bc every Ruby
 object knows its own class (Rails figures out that =@user= is of class
 =User=). Moreover, since =@user= is a /new/ user (by the =new= method
-call), Rails knows to construct a form w/ the =post= method. 
+call), Rails knows to construct a form with the =post= method. 
 #+BEGIN_SRC ruby
 <%= f.label :name %>
 <%= f.text_field %>
@@ -1814,7 +1814,7 @@ We handle saving anew user (if valid) to the database.
 - First, we try to save the user;
 - if the save succeeds, the user's information gets written to the
   database automatically, and
-- we then /redirect/ the browser to show the users profile (w/ a
+- we then /redirect/ the browser to show the users profile (with a
   greeting)
 
 The finished signup form. \\
@@ -1836,7 +1836,7 @@ A test for valid submission. \\
 *Professional-grade deployment*. \\
 Now that we have a working signup page, we will make the deployment
 professional-grade. We add an important feature to the production app
-to make signup secure, and replace the default webserver w/ one
+to make signup secure, and replace the default webserver with one
 suitable for real-world use. 
 
 SSL in production. \\
@@ -1861,7 +1861,7 @@ handling a large number of incoming requests.
 Conclusion. \\
 We have laid an essential foundation for all future development. In
 ch8 and ch9 we complete our authentication machinery by allowing users
-to log in and out of the app (w/ optional 'remember me'
+to log in and out of the app (with optional 'remember me'
 functionality). In ch10, we allow all users to update their account
 information, and we allow site administrators to delete users, thereby
 completing the full suite of Users resource REST actions from the
@@ -1890,14 +1890,14 @@ We’ll implement a basic but still fully functional login system: the
 application will maintain the logged-in state until the browser is
 closed by the user. The authentication system will be customized based
 on login status and identity of the current user. For example, we'll
-be able to update the site header w/ login/logout links and a profile
+be able to update the site header with login/logout links and a profile
 link. \\
 In ch10, we impose a security model in which:
 - only logged-in users can visit the user index page,
 - only the correct user can access the page for editing thier information,
 - and only admin users can delete other users from the database.
 In ch13, we use the identity of a logged-in user to create microposts
-associated w/ the user. Ch14 allows the current user to follow other
+associated with the user. Ch14 allows the current user to follow other
 users of the application (thereby receiving a feed of their
 microposts). \\
 The authentication system from this chapter will serve as a foundation
@@ -1933,7 +1933,7 @@ Sessions controller:
 - =POST create=: logging in is handled by sending a POST request to the =create= action
 - =DELETE destroy= logging out is handled by sending a DELETE request to the =destroy=
   action
-We begin by generating a Sessions controllers w/ a =new= action:
+We begin by generating a Sessions controllers with a =new= action:
  : $ rails generate controller Sessions new
 Following the model of the sign up page, our plan is to create a login
 form for creating a new sessions. Unlike the Users resource, which
@@ -1988,7 +1988,7 @@ sessions (login) is to handle /valid/ input. We
 - then lay the foundations for successful login by evaluating each
   login submission based on the validity of its email/password
   combination
-We start w/ a minimalist =create= action for the Sessions controller
+We start with a minimalist =create= action for the Sessions controller
 and add an empty action =new= and =destroy=. \\
 Inspecting the debug information, the submission results in a =params=
 hash containing the email and password under the key =session= (see
@@ -2049,7 +2049,7 @@ messages:
     ...
   <% end %>
 #+END_SRC
-The errors are associated w/ a particular Active Record object, but
+The errors are associated with a particular Active Record object, but
 this strategy won't work here bc the session isn't an active record
 model. Instead, we'll put a message in the flash to be displayed upon
 failed login as:
@@ -2109,7 +2109,7 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
 *Logging in*. \\
 Now that our login can handle invalid submissions, the next step is to
 handle valid submissions correctly by actually loggin a user in. We
-log the user in w/ a temporary session cookie that expires
+log the user in with a temporary session cookie that expires
 automatically upon the browser close. We add sessions that persist
 even after closing the browser. \\
 Implementing sessions involves defining a large number of related
@@ -2126,7 +2126,7 @@ we arrange to make them available in our controllers as well.
 : end 
 
 The =log_in= method. \\
-Logging a user in is simple w/ the help of the =session= method
+Logging a user in is simple with the help of the =session= method
 defined by Rails (seperate and distinct from the Sessions
 controller). We can treat =session= as if it were a hash, and assign
 to it: =session[:user_id] = user.id=. This places a temporary cookies
@@ -2138,7 +2138,7 @@ Bc we want to use the same login technique in a couple different
 places, we'll define a method called =log_in= in the Sessions helper
 (see below). Bc temp cookies created using the =session= method are
 automatically encrypted, the code below is secure (applies only to
-temp sessions via =session= method, not w/ sessions via =cookie=
+temp sessions via =session= method, not with sessions via =cookie=
 method). Permanent cookies are vulnerable to session hijacking attacks
 (cf. ch9). \\
 
@@ -2214,7 +2214,7 @@ layout links based on the login status. In particular, we add links
 for logging out, links for user settings, for listing all users, and
 for the current user's profile page. \\
 At this point, I would consider writing an integration test to capture
-the behavior described above. As you become mroe familiar w/ the
+the behavior described above. As you become mroe familiar with the
 testing tools in Rails you may find yourself more inclined to write
 tests first. In this case, such a test involves several new ideas, so
 for now it's best to defer for later. \\
@@ -2302,11 +2302,11 @@ registered user, which means that such a user must already exist in
 the database. The default Rails way to do this is to use /fixtures/,
 which are a way of organizing data to be loaded into the test
 database (which we deleted so our email uniqueness tests would
-pass). Now we're ready to start filling in the empty file w/ custom
+pass). Now we're ready to start filling in the empty file with custom
 fixtures of our own. \\
 In the present case, we need only one user, whose information should
 consist of a valid name and email address. Bc we'll need to log the
-user in, we also have to include a valid password to compare w/ the
+user in, we also have to include a valid password to compare with the
 password submitted to the Sessions controller's =create=
 action. Referring to the data model, we see that this means creating a
 =password_digest= attribute for the user fixture, which we accomplish
@@ -2335,15 +2335,15 @@ embedded Ruby, which allows us to use the User class method
 user. Although, we've defined the =password_digest= attributes
 required by =has_secure_password=, sometimes it's convenient to refer
 to the plain (virtual) password as well. This is impossible to arrange
-w/ fixtures, and adding a =password= attribute cuases Rails to
+with fixtures, and adding a =password= attribute cuases Rails to
 complain that there is no such column in the db (true). We'll make do
 by adopting the convention that ll fixture users have the same
 password =password=. \\
-Having created a fixture w/ a valid user, we can retrieve it inside a
+Having created a fixture with a valid user, we can retrieve it inside a
 test as follows:
 : user = users(:foo)
 Here =users= corresponds to the fixture filename =user.yml=, while the
-symbol =:foo= references user w/ the key shown. With the fixture user
+symbol =:foo= references user with the key shown. With the fixture user
 as above, we can now write a test for the layout links by converting
 the sequence enumerated at the beginning of this section into code
 (see below). \\
@@ -2506,7 +2506,7 @@ The authentication machinery from ch8 enables the use of a /before
 filter/ to ensure that this is the case.
 
 *Edit form*. \\
-We begin w/ the edit form which consists of name, email, and
+We begin with the edit form which consists of name, email, and
 password/password confirmation fields to update the user profile. An
 edit working page = fill User controler =edit= action + user edit
 view. The =edit= action requires pulling the relevant user out of the
@@ -2518,12 +2518,12 @@ view. Te use of
 in the Gravatar link is a neat trick to get the browser to open the
 page in a new window or tab, which is sometimes convenient behavior
 when linking to third-party sites. There is a minor security issue
-associated w/ it; dealing w/ the details is covered below. \\
-W/ the =@user= instance variable, the edit page should render properly
-the 'Name' and 'Email' fields w/ the corresponding =@user=
+associated with it; dealing with the details is covered below. \\
+WITH the =@user= instance variable, the edit page should render properly
+the 'Name' and 'Email' fields with the corresponding =@user=
 attributes. \\
 Since web browsers can't natively send =PATCH= requests (as required
-by the REST conventions, Rails fakes it w/ a =POST= request and a
+by the REST conventions, Rails fakes it with a =POST= request and a
 hidden =input= field (found in the HTML browser view of edit, see
 below). The code =form_for(@user)= is exactly the same code as the one
 from the new user view. How does Raisl know to use a =POST= request
@@ -2532,7 +2532,7 @@ possible to tell whether a user is new or already exists in the
 database via Active Record's =new_record?= boolean method (see
 below). \\
 We fill in the URL of the settings link to the site navigation via the
-=edit_user_path= named route, together w/ the =current_user= helper
+=edit_user_path= named route, together with the =current_user= helper
 method (see below).
 #+BEGIN_SRC ruby
 ./app/controller/users_controller.rb
@@ -2637,18 +2637,18 @@ class UsersEditTest < ActionDispatch::IntegrationTest
 end
 #+END_SRC
 
-*Successful edits (w/ TDD)*. \\
+*Successful edits (with TDD)*. \\
 We get the edit form to work. Editing the profile images is already
 functional since we've outsourced images upload to the Gravatar
 website; we can edit Gravatars by clicking the 'change' link. Let's
 get the rest of the user edit functionality working. \\
-As we get more comfortable w/ testing, you might find that it's useful
+As we get more comfortable with testing, you might find that it's useful
 to write integration tests before writing the app code instead of
 after. In this context, such tests are sometimes known as /acceptance
 tests/, since they determine when a particular feature should be
 acceptable as complete. To see how this works, we'll complete the user
 edit feature using test-driven development. \\
-We'll test for the correct behavior of updating users w/ the following
+We'll test for the correct behavior of updating users with the following
 behavior in mind:
 - we submit valid information
 - we check for a nonempty flash message and a successful redirect to
@@ -2694,11 +2694,11 @@ If we remove our security model, that is the before filter call to
 =logged_in_user=, our test suite is still GREEN (comment out the
 before hook and the controller '... when not logged in' tests). Of all
 the regressions we'd like our test suite to catch, a massive security
-hole like this is #1. So the code w/out the our security model should
+hole like this is #1. So the code without the our security model should
 definitely be RED. \\
 Bc the before filter operates on a per-action basis, we'll put the
 corresponding tests in the Users controller test. The plan is to hit
-the =edit= and =update= actions w/ the right kinds of requests and
+the =edit= and =update= actions with the right kinds of requests and
 verify that the flash is set and the user is redirected to the login
 path. Notice the second test involves using the =patch= method to send
 a =PATCH= request to =user_path(@user)= (which is then routed to the
@@ -2758,7 +2758,7 @@ can test the =edit= and =update= actions. Note that we expect to
 redirect users to the root path instead of the login path bc a user
 trying to edit a different user would already be logged in. \\
 To redirect users trying to edit another user's profile, we'll add a
-second method called =correct_user=, together w/ a before filter
+second method called =correct_user=, together with a before filter
 to call it. Note that the =current_user= defines the =@user=
 variable, which shows that we can eliminate the =@user= assignment in
 the =edit= and =update= actions. \\
@@ -2767,7 +2767,7 @@ As some final refactoring: we adopt a common convention and define a
 filter (defined in the Sessions helper). We use this method to replace
 code like:
  : unless @user == current_user
-w/ the (slightly) more expressive
+with the (slightly) more expressive
  : unless current_user?(@user)
 #+BEGIN_SRC ruby
 test/controllers/user_controller.rb
@@ -2841,11 +2841,11 @@ intended destination instead. \\
 In th course of developing the core sample app, we've encountered four
 resources--users, session, account activations, and password
 resets--but only the first of these is backed by an Active Record
-model w/ a table in the database. \\
+model with a table in the database. \\
 We add a second such resource: user microposts, which are short
-messages associated w/ a particular user. We will make a full strength
+messages associated with a particular user. We will make a full strength
 version of the sketch from section 2.3 by constructing a Micropost
-data model, associating it w/ the User model using the =has_many= and
+data model, associating it with the User model using the =has_many= and
 =belongs_to= methods, and then making the forms and partials needed to
 manipulate and display the results (including uploaded images). In
 ch14, we'll complete our tiny Twitter clone by adding the notion of
