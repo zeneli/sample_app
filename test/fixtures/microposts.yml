@@ -2,15 +2,27 @@
 lorem:
   content: "Lorem ipsum dolor sit amet,"
   created_at: <%= 10.minutes.ago %>
+  user: foo
 consectetur:
   content: "consectetur adipiscing elit,"
   created_at: <%= 7.minutes.ago %>
+  user: foo 
 sed:
   content: "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
   created_at: <%= 2.hours.ago %>
+  user: foo
 ut:
   content: "Ut enim ad minim veniam,"
   created_at: <%= 1.year.ago %>
+  user: foo
 most_recent:
   content: "Writing a short test"
   created_at: <%= Time.zone.now %>
+  user: foo
+
+<% 30.times do |n| %>
+micropost_<%= n %>:
+  content: <%= Faker::Lorem.sentence(5) %>
+  created_at: <%= 42.days.ago %>
+  user: foo
+<% end %>
