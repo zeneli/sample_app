@@ -34,7 +34,7 @@ production:
   host: sample-app-production.cktzjp9b3xg0.us-west-2.rds.amazonaws.com
   port: 5432
 
-host: localhost
-username: az
-password: BNMbnm789
+#host: localhost
+#username: az
+#password: BNMbnm789
 
