@@ -4,13 +4,12 @@ class MicropostTest < ActiveSupport::TestCase
   def setup
     @user = users(:foo)
     # This code is not idiomatically correct.
-    @micropost = Micropost.new(content: "Lorem ipsum", user_id: @user.id)
+    @micropost = @user.microposts.build(content: "Lorem ipsum")
   end
   test "should be valid" do
     assert @micropost.valid?
   end
   test "usser id should be present" do
-    # passes regardless bc of idiomatically incorrect micropost initialization
     @micropost.user_id = nil
     assert_not @micropost.valid?
   end
