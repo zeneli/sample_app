@@ -6,20 +6,13 @@
         <%= gravatar_for @user %>
         <%= @user.name %>
       </h1>
-      <br>
-      <h2><%= @user.email %></h2>
-      <br>
-      <p>
-        User since: <%= time_ago_in_words(@user.created_at) %> ago.
-        <br>
-        Last updated: <%= time_ago_in_words(@user.updated_at) %> ago.
-      </p>
-      <p>
-        Now: <%= Time.now %>
-      </p>
+    </section>
+    <section class="stats">
+      <%= render 'shared/stats' %>
     </section>
   </aside>
   <div class="col-md-8">
+    <%= render 'follow_form' if logged_in? %>
     <% if @user.microposts.any? %>
     <h3>Microposts (<%= @user.microposts.count %>)</h3>
     <ol class="microposts">
