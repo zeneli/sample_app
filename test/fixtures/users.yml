@@ -11,6 +11,12 @@ bar:
   password_digest: <%= User.digest('password') %>
   admin: false
 
+michael:
+  name: Michael Example
+  email: michael@example.com
+  password_digest: <%= User.digest('password') %>
+  admin: false
+
 archer:
   name: Sterling Archer
   email: duchess@example.gov
@@ -31,4 +37,5 @@ user_<%= n %>:
   name: <%= "User #{n}" %>
   email: <%= "user-#{n}@example.com" %>
   password_digest: <%= User.digest('password') %>
+  admin: false
 <% end %>
