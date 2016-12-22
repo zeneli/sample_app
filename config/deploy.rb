@@ -1,8 +1,19 @@
+require "bundler/capistrano"
+
+server "192.168.1.171", :web, :app, :db, primary: true 
 # config valid only for current version of Capistrano
 lock "3.7.1"
 
-set :application, "my_app_name"
+set :application, "sample_app"
+set :user, "az"
+set :deploy_to "/home/#{user}/app/#{application}"
+set :deploy_via, :remote_cache
+set :use_sudo, false
+
+set :scm, "git"
 set :repo_url, "git@example.com:me/my_repo.git"
+set :branch, "capistrano-playground"
+
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
@@ -18,7 +29,7 @@ set :repo_url, "git@example.com:me/my_repo.git"
 # set :format_options, command_output: true, log_file: "log/capistrano.log", color: :auto, truncate: :auto
 
 # Default value for :pty is false
-# set :pty, true
+set :pty, true
 
 # Default value for :linked_files is []
 # append :linked_files, "config/database.yml", "config/secrets.yml"
@@ -31,3 +42,13 @@ set :repo_url, "git@example.com:me/my_repo.git"
 
 # Default value for keep_releases is 5
 # set :keep_releases, 5
+
+
+namespace :deploy do
+  %w[start stop restart].each do |command|
+    desc "#{command} unicorn server"
+    task comman, roles: :app, except: {no_release: true} do
+      run "/etc/init.d/unicorn_#{application} #{command}"
+    end
+  end
+end
