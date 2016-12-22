@@ -1,0 +1,9 @@
+server {
+  listen 80 default;
+  # server_name example.com;
+  root /home/az/workspace/rails/sample_app;
+  try_files $uri/index.html $uri @unicorn;
+  location @unicorn {
+    proxy_pass http://localhost:3000
+  }
+}
