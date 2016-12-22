@@ -14,9 +14,11 @@ set -e
 
 # Feel free to change any of the following variables for your app:
 TIMEOUT=${TIMEOUT-60}
-APP_ROOT=/home/az/workspace/rails/sample_app
+APP_ROOT=/home/az/workspace/rails/sample_app;
 PID=$APP_ROOT/tmp/pids/unicorn.pid
-CMD="$APP_ROOT/bin/unicorn -D -c $APP_ROOT/config/unicorn.rb"
+CMD="/usr/bin/unicorn -D -c $APP_ROOT/config/unicorn.rb"
+INIT_CONF=$APP_ROOT/config/init.conf
+UPGRADE_DELAY=${UPGRADE_DELAY-2}
 action="$1"
 set -u
 
@@ -37,7 +39,7 @@ oldsig () {
 case $action in
 start)
 	sig 0 && echo >&2 "Already running" && exit 0
-	su -c "$CMD" - az
+	$CMD
 	;;
 stop)
 	sig QUIT && exit 0
@@ -50,7 +52,7 @@ force-stop)
 restart|reload)
 	sig HUP && echo reloaded OK && exit 0
 	echo >&2 "Couldn't reload, starting '$CMD' instead"
-	su -c "$CMD" - az
+	$CMD
 	;;
 upgrade)
 	if oldsig 0
@@ -88,7 +90,7 @@ upgrade)
 		exit 0
 	fi
 	echo >&2 "Couldn't upgrade, starting '$CMD' instead"
-	su -c "$CMD" - az
+	$CMD
 	;;
 reopen-logs)
 	sig USR1
