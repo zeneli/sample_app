@@ -14,28 +14,28 @@ set -e
 
 # Feel free to change any of the following variables for your app:
 TIMEOUT=${TIMEOUT-60}
-APP_ROOT=/home/az/workspace/rails/sample_app;
+APP_ROOT=/home/deployer/sample_app
 PID=$APP_ROOT/tmp/pids/unicorn.pid
-CMD="$APP_ROOT/bin/unicorn -D -c $APP_ROOT/config/unicorn.rb"
+CMD="$APP_ROOT/bin/unicorn -D -c $APP_ROOT/config/unicorn.rb -E production"
 action="$1"
 set -u
 
-OLD="$PID.oldbin"
+old_pid="$PID.oldbin"
 
 cd $APP_ROOT || exit 1
 
 sig () {
-	test -s "$PID" && kill -$1 $(cat $PID)
+	test -s "$PID" && kill -$1 `cat $PID`
 }
 
 oldsig () {
-	test -s "$OLD" && kill -$1 $(cat $OLD)
+	test -s $old_pid && kill -$1 `cat $old_pid`
 }
 
 case $action in
 start)
 	sig 0 && echo >&2 "Already running" && exit 0
-	su -c "$CMD" - az
+	su -c "$CMD" - deployer
 	;;
 stop)
 	sig QUIT && exit 0
@@ -48,45 +48,27 @@ force-stop)
 restart|reload)
 	sig HUP && echo reloaded OK && exit 0
 	echo >&2 "Couldn't reload, starting '$CMD' instead"
-		su -c "$CMD" - az
+	su -c "$CMD" - deployer
 	;;
 upgrade)
-	if oldsig 0
-	then
-		echo >&2 "Old upgraded process still running with $OLD"
-		exit 1
-	fi
-
-	cur_pid=
-	if test -s "$PID"
-	then
-		cur_pid=$(cat $PID)
-	fi
-
-	if test -n "$cur_pid" &&
-			kill -USR2 "$cur_pid" &&
-			sleep $UPGRADE_DELAY &&
-			new_pid=$(cat $PID) &&
-			test x"$new_pid" != x"$cur_pid" &&
-			kill -0 "$new_pid" &&
-			kill -QUIT "$cur_pid"
+	if sig USR2 && sleep 2 && sig 0 && oldsig QUIT
 	then
 		n=$TIMEOUT
-		while kill -0 "$cur_pid" 2>/dev/null && test $n -ge 0
+		while test -s $old_pid && test $n -ge 0
 		do
 			printf '.' && sleep 1 && n=$(( $n - 1 ))
 		done
 		echo
 
-		if test $n -lt 0 && kill -0 "$cur_pid" 2>/dev/null
+		if test $n -lt 0 && test -s $old_pid
 		then
-			echo >&2 "$cur_pid still running after $TIMEOUT seconds"
+			echo >&2 "$old_pid still exists after $TIMEOUT seconds"
 			exit 1
 		fi
 		exit 0
 	fi
 	echo >&2 "Couldn't upgrade, starting '$CMD' instead"
-		su -c "$CMD" - az
+	su -c "$CMD" - deployer
 	;;
 reopen-logs)
 	sig USR1
